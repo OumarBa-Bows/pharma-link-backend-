@@ -1,4 +1,6 @@
 const { routes: authRoute } = require("../auth/route");
+const { routes: articleRoute } = require("../article/route");
+const { accessToken } = require("../utils/verifyTokens");
 
 module.exports = _setUpRoutes;
 
@@ -9,6 +11,7 @@ function _setUpRoutes(options = {}) {
     //---------------------------------------------------------------------------------------------
     // Import routes.
     app.use("/api/auth", authRoute);
+    app.use("/api/articles", accessToken, articleRoute);
 
     // Everything's ok, continue.
     return (req, res, next) => next();
