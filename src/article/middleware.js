@@ -11,23 +11,60 @@ const validate = (req, res, next) => {
 
 // Validation pour la création d'article
 exports.createArticleInputs = () => [
-  body("title").notEmpty().withMessage("The title is required"),
+  body("code").notEmpty().withMessage("The code is required"),
+  body("name").notEmpty().withMessage("The name is required"),
   body("price")
     .isFloat({ gt: 0 })
     .withMessage("The price must be a positive number"),
+  body("imageLink")
+    .optional()
+    .isString()
+    .withMessage("The imageLink must be a string"),
+  body("description")
+    .optional()
+    .isString()
+    .withMessage("The description must be a string"),
+  body("expiryDate")
+    .optional()
+    .isISO8601()
+    .withMessage("The expiryDate must be a valid date"),
+  body("barcode")
+    .optional()
+    .isString()
+    .withMessage("The barcode must be a string"),
   validate,
 ];
 
 // Validation pour la mise à jour d'article
 exports.updateArticleInputs = () => [
-  body("title")
+  body("code")
     .optional()
     .notEmpty()
-    .withMessage("The title must not be empty if provided"),
+    .withMessage("The code must not be empty if provided"),
+  body("name")
+    .optional()
+    .notEmpty()
+    .withMessage("The name must not be empty if provided"),
   body("price")
     .optional()
     .isFloat({ gt: 0 })
     .withMessage("The price must be a positive number if provided"),
+  body("imageLink")
+    .optional()
+    .isString()
+    .withMessage("The imageLink must be a string"),
+  body("description")
+    .optional()
+    .isString()
+    .withMessage("The description must be a string"),
+  body("expiryDate")
+    .optional()
+    .isISO8601()
+    .withMessage("The expiryDate must be a valid date"),
+  body("barcode")
+    .optional()
+    .isString()
+    .withMessage("The barcode must be a string"),
   validate,
 ];
 
