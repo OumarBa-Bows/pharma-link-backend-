@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const http = require("http");
 const fileupload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 
 const { prisma, connect: connectPrisma } = require("./configs/prisma.conf");
 
@@ -11,8 +12,25 @@ const routes = require("./routes/");
 
 const app = express();
 const server = http.Server(app);
+app.use(cookieParser());
+const allowedOrigins = [
+  "http://localhost:4200",
+  "http://localhost",
+  "http://127.0.0.1",
+];
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(fileupload());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

@@ -24,11 +24,13 @@ const handleAsync = (fn) => async (req, res) => {
 exports.login = handleAsync(async (req, res) => {
   const body = req.body;
   const { user, accessToken, refreshToken } = await service.login(body);
-  return sendSuccessResponse(
-    res,
-    { user, accessToken, refreshToken },
-    "Login successful"
-  );
+  // Définir le cookie HTTP-only pour le token d'accès
+  res.cookie("token", accessToken, {
+    httpOnly: true,
+    secure: false, // à mettre à true en production avec HTTPS
+    sameSite: "strict",
+  });
+  return sendSuccessResponse(res, { user }, "Login successful");
 });
 
 exports.refreshToken = handleAsync(async (req, res) => {

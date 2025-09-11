@@ -14,6 +14,12 @@ routes.put("/:id", middleware.updateArticleInputs(), controller.update);
 // Supprimer un article
 routes.delete("/:id", middleware.deleteArticleInputs(), controller.delete);
 
+// Récupérer tous les articles
+routes.get("/", controller.getAll);
+
+// Récupérer un article par ID
+routes.get("/:id", controller.getById);
+
 module.exports = {
   routes,
 };

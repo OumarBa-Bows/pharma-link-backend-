@@ -2,7 +2,8 @@ const JWT = require("../configs/jwt.conf");
 const excepetionRaiser = require("./error-handle");
 exports.accessToken = async (req, res, next) => {
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const token =
+      req.cookies.token ?? req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return excepetionRaiser.errorHandler(
         "Unauthorized",

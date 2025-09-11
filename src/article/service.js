@@ -46,3 +46,23 @@ exports.deleteArticle = async (id) => {
     return Promise.reject(error);
   }
 };
+
+// Récupérer tous les articles
+exports.getAllArticles = async () => {
+  try {
+    const articles = await prisma.article.findMany();
+    return articles;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+// Récupérer un article par ID
+exports.getArticleById = async (id) => {
+  try {
+    const article = await prisma.article.findUnique({ where: { id } });
+    return article;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};

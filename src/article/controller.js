@@ -41,3 +41,24 @@ exports.delete = handleAsync(async (req, res) => {
   const article = await service.deleteArticle(Number(id));
   return sendSuccessResponse(res, { article }, "Article deleted successfully");
 });
+
+// Récupérer tous les articles
+exports.getAll = handleAsync(async (req, res) => {
+  const articles = await service.getAllArticles();
+  return sendSuccessResponse(
+    res,
+    { articles },
+    "Articles retrieved successfully"
+  );
+});
+
+// Récupérer un article par ID
+exports.getById = handleAsync(async (req, res) => {
+  const { id } = req.params;
+  const article = await service.getArticleById(Number(id));
+  return sendSuccessResponse(
+    res,
+    { article },
+    "Article retrieved successfully"
+  );
+});
