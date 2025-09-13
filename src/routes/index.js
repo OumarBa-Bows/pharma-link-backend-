@@ -1,6 +1,10 @@
-const { routes: authRoute } = require("../auth/route");
-const { routes: articleRoute } = require("../article/route");
+// const { routes: authRoute } = require("../auth/route");
+
+import { articleRoute } from "../article/route";
+
+// const { routes: articleRoute } = require("../article/route");
 const { accessToken } = require("../utils/verifyTokens");
+
 
 module.exports = _setUpRoutes;
 
