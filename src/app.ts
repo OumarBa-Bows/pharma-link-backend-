@@ -1,78 +1,109 @@
-import 'dotenv/config';
-import express, { Application } from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import http from 'http';
-import fileupload from 'express-fileupload';
-import cookieParser from 'cookie-parser';
+import "reflect-metadata";
+import express, { Application } from "express";
+import { envConfig } from "./configs/env.config";
+envConfig();
 
-import { prisma, connect as connectPrisma } from './configs/prisma.conf';
-import routes from './routes';
+import { IncomingMessage } from "http";
+
+// Extend IncomingMessage to include rawBody
+declare module "http" {
+  interface IncomingMessage {
+    rawBody?: string;
+  }
+}
+
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import winston from "winston";
+import * as Sentry from "@sentry/node";
+import { DataSource } from "typeorm";
+import { AppDataSourceConfig } from "./configs/TypeOrmDataSource";
+const { createLogger, format, transports } = winston;
+const { combine, timestamp, printf, colorize } = format;
+// Custom printf format that structures the log as "Timestamp Loglevel Message"
+const logFormat = printf(({ level, message, timestamp }) => {
+  return `${timestamp} ${level}: ${message}`;
+});
+
+export const logger = createLogger({
+  transports: [
+    new transports.File({
+      filename: "error.log",
+      level: "error",
+      format: format.json(),
+    }),
+    new transports.Http({
+      level: "warn",
+      format: format.json(),
+    }),
+    new transports.Console({
+      level: "info",
+      format: combine(
+        timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
+        colorize({ all: false, message: false }),
+        logFormat
+      ),
+    }),
+  ],
+});
+
+import "./Events/PendingOrderListner";
+import "./Events/ItemVirtualAvailabilityListner";
+import orderJobRoute from "./routes/OrderJob.route";
+
+export const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      persistSession: false,
+    },
+    global: {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    },
+  }
+);
 
 const app: Application = express();
-const server = http.createServer(app);
+app.use(cors());
 
-const allowedOrigins: string[] = [
-  'http://localhost:4200',
-  'http://localhost',
-  'http://127.0.0.1',
-];
-
-app.use(cookieParser());
-
+// app.use(express.json());
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
     },
-    credentials: true,
   })
 );
 
-app.use(fileupload());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// The request handler must be the first middleware on the app
+// app.use(Sentry.Handlers.requestHandler());
 
-// Setup routes
-app.use(routes({ app, prisma }));
+// TracingHandler creates a trace for every incoming request
+// app.use(Sentry.Handlers.tracingHandler());
 
-(async function startServer() {
-  await connectPrisma(); // Prisma connecté ici
+//Order endpoint routes prefix
+app.use("/api/order", orderJobRoute);
 
-  const port = Number(process.env.APP_PORT) || 3000;
-  server.listen(port, () => {
-    console.info(`🚀 Server running on port: ${port}`);
-  });
-})();
+// Set the port for the server to listen on from environment or default to 3002
+const PORT = process.env.PORT || 6345;
+export const AppDataSource = new DataSource(AppDataSourceConfig);
 
-function gracefulShutdown(exit = false) {
-  console.warn('Received SIGINT or SIGTERM. Shutting down gracefully...');
-  const exitCode = exit ? 1 : 0;
-
-  server.close(async () => {
-    console.info('Closed out remaining connections.');
-    await prisma.$disconnect(); // Déconnexion Prisma propre
-    process.exit(exitCode);
-  });
-
-  // Force stop après 5 sec
-  setTimeout(() => {
-    console.error(
-      'Could not close connections in time, forcefully shutting down'
-    );
-    process.exit(exitCode);
-  }, 5 * 1000);
+// Start the server and log the URL where it is running
+async function startServer() {
+  try {
+    await AppDataSource.initialize();
+    console.log("Connection to the database established successfully!");
+    app.listen(PORT, async () => {
+      logger.info(`Server is running on port http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to initialize database connection:", error);
+    Sentry.captureException(error);
+  }
 }
 
-process.on('unhandledRejection', (reason: any, p: Promise<any>) => {
-  console.error(reason, 'Unhandled Rejection at Promise', p);
-});
-
-process.on('uncaughtException', (err) => {
-  console.error(err, 'Uncaught Exception thrown');
-  gracefulShutdown(true);
-});
+startServer();
