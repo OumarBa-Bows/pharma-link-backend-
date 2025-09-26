@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  redis-pos-dev:
+    image: redis:latest
+    container_name: redis-pharmalink-dev
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_pharmalink_data:/data
+
+volumes:
+  redis_pos_data:

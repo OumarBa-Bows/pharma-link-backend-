@@ -1,7 +1,0 @@
-{
-  "verbose": true,
-  "ignore": ["public/", "README.md"],
-  "execMap": {
-    "app": "./src/app.js"
-  }
-}
