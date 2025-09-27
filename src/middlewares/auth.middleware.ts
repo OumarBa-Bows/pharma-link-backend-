@@ -2,10 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { logger } from "../app";
 import * as Sentry from "@sentry/node";
+import { body, ValidationError, validationResult } from "express-validator";
 
 export function authorize(roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.cookies.token ?? req.headers.authorization;
 
     // Check if Auhorization Header is Missing
     if (!authHeader) {
@@ -67,3 +68,20 @@ export function authorize(roles: string[]) {
     }
   };
 }
+
+// Fonction générique pour gérer les erreurs de validation
+const validate = (req: Request, res: Response, next: () => void) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
+
+export const loginValidator = [
+  body("email").isEmail().withMessage("Un email valide est requis."),
+  body("password")
+    .isLength({ min: 3 })
+    .withMessage("Le mot de passe est requis."),
+  validate,
+];
