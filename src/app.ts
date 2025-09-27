@@ -108,21 +108,57 @@ export const AppDataSource = new DataSource(AppDataSourceConfig);
 // Start the server and log the URL where it is running
 import bcrypt from "bcryptjs";
 import { getUserRepository } from "./repository/userRepository";
+// import { AppDataSource } from "./app";
+import { Role } from "./entities/Role.entity";
 
 async function createDefaultAdmin() {
   const userRepo = getUserRepository();
-  const existing = await userRepo.findOneBy({ email: "admin@gmail.com" });
-  if (!existing) {
+  const roleRepo = AppDataSource.getRepository(Role);
+
+  // Créer les rôles s'ils n'existent pas
+  const roleNames = ["admin", "article"];
+  const roles: Role[] = [];
+  for (const name of roleNames) {
+    let role = await roleRepo.findOneBy({ name });
+    if (!role) {
+      role = roleRepo.create({ name });
+      await roleRepo.save(role);
+      logger.info(`Rôle '${name}' créé.`);
+    }
+    roles.push(role);
+  }
+
+  // Créer ou mettre à jour l'utilisateur admin
+  let admin = await userRepo.findOne({
+    where: { email: "admin@gmail.com" },
+    relations: ["roles"],
+  });
+  if (!admin) {
     const hashed = await bcrypt.hash("1234", 10);
-    const admin = userRepo.create({
+    admin = userRepo.create({
       name: "admin",
       email: "admin@gmail.com",
       password: hashed,
+      roles,
     });
     await userRepo.save(admin);
-    logger.info("Utilisateur admin par défaut créé.");
+    logger.info("Utilisateur admin par défaut créé et rôles assignés.");
   } else {
-    logger.info("Utilisateur admin déjà existant.");
+    // Ajouter les rôles s'ils ne sont pas déjà présents
+    const adminRoleNames = admin.roles?.map((r) => r.name) || [];
+    let updated = false;
+    for (const role of roles) {
+      if (!adminRoleNames.includes(role.name)) {
+        admin.roles = [...(admin.roles || []), role];
+        updated = true;
+      }
+    }
+    if (updated) {
+      await userRepo.save(admin);
+      logger.info("Rôles ajoutés à l'utilisateur admin existant.");
+    } else {
+      logger.info("Utilisateur admin déjà existant avec les bons rôles.");
+    }
   }
 }
 

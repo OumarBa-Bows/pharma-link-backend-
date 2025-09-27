@@ -9,7 +9,7 @@ export class AuthService {
    * @param payload Données à inclure dans le token (doit inclure le champ role)
    * @returns string (JWT)
    */
-  generateToken(payload: { id: number; email: string; role: string }): string {
+  generateToken(payload: { id: number; email: string; role?: string }): string {
     const jwtSecretKey = process.env.SUPABASE_JWT_SECRET_KEY?.replace(
       /\n/g,
       "\n"
@@ -31,17 +31,38 @@ export class AuthService {
     email: string,
     password: string
   ): Promise<{ user: UserData; token: string } | null> {
-    const user = await getUserRepository().findOneBy({ email });
+    const user = await getUserRepository().findOne({
+      where: { email },
+      relations: ["roles"],
+    });
     if (!user) return null;
     // Vérification du mot de passe hashé avec bcryptjs
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return null;
     const { id, name, email: userEmail, createdAt, updatedAt } = user;
-    // À adapter selon votre logique de rôle
-    const role = (user as any).role || "user";
-    const token = this.generateToken({ id, email: userEmail, role });
+    // Récupérer les rôles de l'utilisateur
+    let roles: string[] = [];
+    if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+      roles = user.roles.map((r) => r.name).filter(Boolean);
+    }
+    // Ne pas ajouter de rôle par défaut si aucun rôle n'est trouvé
+    let tokenPayload: { id: number; email: string; roles?: string[] } = {
+      id,
+      email: userEmail,
+    };
+    if (roles.length > 0) {
+      tokenPayload.roles = roles;
+    }
+    const token = this.generateToken(tokenPayload);
+    // Préparer les rôles pour le DTO
+    const roleNames = user.roles?.map((r) => r.name) || [];
     return {
-      user: { id, name, email: userEmail, createdAt, updatedAt },
+      user: {
+        id,
+        name,
+        email: userEmail,
+        roles: roleNames,
+      },
       token,
     };
   }

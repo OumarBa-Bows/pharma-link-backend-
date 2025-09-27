@@ -1,9 +1,12 @@
-export interface ArticleData {
-  id: number;
-  title: string;
-  description?: string;
+export interface ArticleDto {
+  id: string;
+  code: string;
+  name: string;
   price: number;
+  imageLink?: string;
+  description?: string;
+  expiryDate?: Date;
+  barcode?: string;
   createdAt: Date;
   updatedAt: Date;
-  // pour les autres champs dynamiques
 }

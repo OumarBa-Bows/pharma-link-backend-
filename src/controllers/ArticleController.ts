@@ -24,7 +24,7 @@ export class ArticleController {
   static update = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const article = await ArticleService.updateArticle(Number(id), req.body);
+      const article = await ArticleService.updateArticle(id, req.body);
       return res.status(200).send({
         success: true,
         message: "Article updated successfully",
@@ -43,7 +43,7 @@ export class ArticleController {
   static delete = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const article = await ArticleService.deleteArticle(Number(id));
+      const article = await ArticleService.deleteArticle(id);
       return res.status(200).send({
         success: true,
         message: "Article deleted successfully",
@@ -80,7 +80,7 @@ export class ArticleController {
   static getById = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const article = await ArticleService.getArticleById(Number(id));
+      const article = await ArticleService.getArticleById(id);
       return res.status(200).send({
         success: true,
         message: "Article retrieved successfully",

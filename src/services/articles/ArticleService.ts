@@ -1,34 +1,25 @@
-import { AppDataSource, logger } from "../../app";
-import { Article } from "../../entities/Article.entity";
-import { ArticleData } from "../../interfaces/ArticleDto";
+import { logger } from "../../app";
+import { ArticleDto } from "../../interfaces/ArticleDto";
+import { getArticleRepository } from "../../repository/articleRepository";
 
 export class ArticleService {
   // Créer un article
-  static async createArticle(data: ArticleData) {
-    const queryRunner = AppDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  static async createArticle(data: ArticleDto) {
     try {
       logger.info("Creating article with data:", data);
-      const articleRepo = queryRunner.manager.getRepository(Article);
-      const article = await articleRepo.insert(data);
-      await queryRunner.commitTransaction();
+      const articleRepo = getArticleRepository();
+      const article = articleRepo.create(data);
+      await articleRepo.save(article);
       return article;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       return Promise.reject(error);
-    } finally {
-      await queryRunner.release();
     }
   }
 
   // Mettre à jour un article
-  static async updateArticle(id: number, data: ArticleData) {
-    const queryRunner = AppDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  static async updateArticle(id: string, data: ArticleDto) {
     try {
-      const articleRepo = queryRunner.manager.getRepository(Article);
+      const articleRepo = getArticleRepository();
       const articleData = {
         ...data,
         ...(data.price !== undefined && {
@@ -38,56 +29,39 @@ export class ArticleService {
               : data.price,
         }),
       };
-
-      const article = await articleRepo.update({ id: id }, articleData);
-
+      const article = await articleRepo.update({ id }, articleData);
       return article;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       return Promise.reject(error);
-    } finally {
-      await queryRunner.release();
     }
   }
 
   // Supprimer un article
-  static async deleteArticle(id: number) {
-    const queryRunner = AppDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  static async deleteArticle(id: string) {
     try {
-      const article = await queryRunner.manager
-        .getRepository(Article)
-        .delete({ id });
-      await queryRunner.commitTransaction();
+      const articleRepo = getArticleRepository();
+      const article = await articleRepo.delete({ id });
       return article;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       return Promise.reject(error);
-    } finally {
-      await queryRunner.release();
     }
   }
 
   // Récupérer tous les articles
   static async getAllArticles() {
     try {
-      const articles = await AppDataSource.manager
-        .getRepository(Article)
-        .find();
-      return articles;
+      const articleRepo = getArticleRepository();
+      return await articleRepo.find();
     } catch (error) {
       return Promise.reject(error);
     }
   }
 
   // Récupérer un article par ID
-  static async getArticleById(id: number) {
+  static async getArticleById(id: string) {
     try {
-      const article = await AppDataSource.manager
-        .getRepository(Article)
-        .findOne({ where: { id } });
-      return article;
+      const articleRepo = getArticleRepository();
+      return await articleRepo.findOneBy({ id });
     } catch (error) {
       return Promise.reject(error);
     }

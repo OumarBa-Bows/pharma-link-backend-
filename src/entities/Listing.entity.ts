@@ -8,31 +8,19 @@ import {
 } from "typeorm";
 import { ListingDetail } from "./ListingDetail.entity";
 
-@Entity("articles")
-export class Article {
+@Entity("listings")
+export class Listing {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
-  code: string;
-
-  @Column()
   name: string;
-
-  @Column("float")
-  price: number;
-
-  @Column({ nullable: true })
-  imageLink?: string;
 
   @Column({ nullable: true })
   description?: string;
 
   @Column({ type: "timestamp", nullable: true })
-  expiryDate?: Date;
-
-  @Column({ nullable: true })
-  barcode?: string;
+  date?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -40,6 +28,9 @@ export class Article {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => ListingDetail, (ld) => ld.article)
+  @OneToMany(
+    () => ListingDetail,
+    (listingDetail: ListingDetail) => listingDetail.listing
+  )
   listingDetails: ListingDetail[];
 }

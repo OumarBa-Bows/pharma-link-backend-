@@ -1,12 +1,15 @@
-import { 
-  Entity, 
-  PrimaryGeneratedColumn, 
-  Column, 
-  CreateDateColumn, 
-  UpdateDateColumn 
-} from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
+} from "typeorm";
+import { Role } from "./Role.entity";
 
-@Entity('users') // correspond au @@map("users")
+@Entity("users") // correspond au @@map("users")
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -20,9 +23,21 @@ export class User {
   @Column()
   password: string;
 
-  @CreateDateColumn({ name: 'createdAt', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    name: "createdAt",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({
+    name: "updatedAt",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+  })
   updatedAt: Date;
+
+  @ManyToMany(() => Role, (role) => role.users, { cascade: true })
+  @JoinTable({ name: "user_roles" })
+  roles: Role[];
 }
