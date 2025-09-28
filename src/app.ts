@@ -1,3 +1,4 @@
+import fileUpload from "express-fileupload";
 import "reflect-metadata";
 import express, { Application } from "express";
 import { envConfig } from "./configs/env.config";
@@ -68,6 +69,7 @@ export const supabase = createClient(
 
 const app: Application = express();
 app.use(cookieParser());
+app.use(fileUpload());
 
 const allowedOrigins = (
   process.env.ALLOWED_ORIGINS ||

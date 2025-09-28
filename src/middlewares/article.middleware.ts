@@ -14,7 +14,7 @@ export const createArticleValidator = [
   body("price")
     .isFloat({ min: 0 })
     .withMessage("Le prix doit être un nombre positif."),
-  body("imageLink").optional().isString(),
+  body("image").optional().isString(),
   body("description").optional().isString(),
   body("expiryDate").optional().isISO8601().toDate(),
   body("barcode").optional().isString(),
@@ -34,7 +34,7 @@ export const updateArticleValidator = [
     .optional()
     .isFloat({ min: 0 })
     .withMessage("Le prix doit être un nombre positif."),
-  body("imageLink").optional().isString(),
+  body("image").optional().isString(),
   body("description").optional().isString(),
   body("expiryDate").optional().isISO8601().toDate(),
   body("barcode").optional().isString(),

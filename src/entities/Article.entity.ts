@@ -28,7 +28,7 @@ export class Article {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: "date", nullable: true })
   expiryDate?: Date;
 
   @Column({ nullable: true })
