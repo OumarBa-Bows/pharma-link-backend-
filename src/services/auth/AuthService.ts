@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { UserData } from "../../interfaces/UserDto";
+import { UserDto } from "../../interfaces/UserDto";
 import { getUserRepository } from "../../repository/userRepository";
 import bcrypt from "bcryptjs";
 
@@ -25,15 +25,24 @@ export class AuthService {
    * Authentifie un utilisateur par email et mot de passe
    * @param email string
    * @param password string
-   * @returns UserData | null
+   * @returns UserDto | null
    */
   async login(
     email: string,
     password: string
-  ): Promise<{ user: UserData; token: string } | null> {
+  ): Promise<{ user: UserDto; token: string } | null> {
     const user = await getUserRepository().findOne({
       where: { email },
       relations: ["roles"],
+      withDeleted: false,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true, // explicitly select hidden field
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     if (!user) return null;
     // Vérification du mot de passe hashé avec bcryptjs

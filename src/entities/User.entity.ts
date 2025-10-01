@@ -20,7 +20,7 @@ export class User {
   @Column({ unique: true }) // correspond à @unique(map: "User_email_key")
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @CreateDateColumn({
@@ -39,5 +39,5 @@ export class User {
 
   @ManyToMany(() => Role, (role) => role.users, { cascade: true })
   @JoinTable({ name: "user_roles" })
-  roles: Role[];
+  roles?: Role[];
 }
