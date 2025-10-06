@@ -95,4 +95,21 @@ export class UserController {
       });
     }
   };
+
+  static getAllRoles = async (req: Request, res: Response) => {
+    try {
+      const data = await UserService.getAllRoles();
+      return res.status(200).send({
+        success: true,
+        message: "Roles fetched successfully",
+        data,
+      });
+    } catch (error: any) {
+      console.error("Error getting roles: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting roles",
+      });
+    }
+  };
 }

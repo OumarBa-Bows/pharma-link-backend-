@@ -7,5 +7,6 @@ userRoute.post("/update/:id", UserController.update);
 userRoute.get("/", UserController.getAll);
 userRoute.get("/:id", UserController.getById);
 userRoute.get("/delete/:id", UserController.delete);
+userRoute.get("/roles/all", UserController.getAllRoles);
 
 export default userRoute;

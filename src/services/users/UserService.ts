@@ -123,4 +123,14 @@ export class UserService {
       return Promise.reject(error);
     }
   }
+
+  // Récupérer tous les roles
+  static async getAllRoles() {
+    try {
+      const roleRepo = getRoleRepository();
+      return await roleRepo.find();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
 }
