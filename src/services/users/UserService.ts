@@ -90,6 +90,7 @@ export class UserService {
         skip: (page - 1) * limit, // décalage
         take: limit, // nombre d'éléments par page
         order: { id: "DESC" }, // optionnel : trier par id desc
+        relations: ["roles"],
       });
 
       return {
