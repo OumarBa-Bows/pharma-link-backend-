@@ -1,7 +1,8 @@
-import { Like } from 'typeorm';
+import { Like, FindOptionsWhere } from 'typeorm';
 import { logger } from '../../app';
 import { Pharmacy } from '../../entities/Pharmacy.entity';
 import { getPharmacyRepository } from '../../repository/pharmacyRepository';
+import { PharmacyState } from '../../enums/PharmacyState.enum';
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -25,11 +26,13 @@ export class PharmacyService {
     try {
       const repository = this.getPharmacyRepository();
       const [data, total] = await repository.findAndCount({
-        where: [
+        where: search ? [
           { name: Like(`%${search}%`) },
           { address: Like(`%${search}%`) },
-          { city: Like(`%${search}%`) },
-        ],
+          { code: Like(`%${search}%`) },
+          { email: Like(`%${search}%`) },
+        ] : {},
+        relations: ['zone', 'user'],
         order: { name: 'ASC' },
         skip: (page - 1) * limit,
         take: limit,
@@ -50,13 +53,16 @@ export class PharmacyService {
     }
   }
 
-  // Get pharmacy by ID
+  // Get a single pharmacy by ID
   static async getPharmacyById(id: string): Promise<Pharmacy | null> {
     try {
       const repository = this.getPharmacyRepository();
-      return await repository.findOneBy({ id });
+      return await repository.findOne({
+        where: { id },
+        relations: ['zone', 'user']
+      });
     } catch (error) {
-      logger.error(`Error getting pharmacy with id ${id}: `, error);
+      logger.error('Error in getPharmacyById: ', error);
       return Promise.reject(error);
     }
   }
@@ -65,25 +71,49 @@ export class PharmacyService {
   static async createPharmacy(pharmacyData: Partial<Pharmacy>): Promise<Pharmacy> {
     try {
       const repository = this.getPharmacyRepository();
+      // Set default state if not provided
+      if (!pharmacyData.state) {
+        pharmacyData.state = PharmacyState.PENDING;
+      }
       const pharmacy = repository.create(pharmacyData);
       return await repository.save(pharmacy);
     } catch (error) {
-      logger.error('Error creating pharmacy: ', error);
+      logger.error('Error in createPharmacy: ', error);
       return Promise.reject(error);
     }
   }
 
-  // Update an existing pharmacy
+  // Update a pharmacy
   static async updatePharmacy(
     id: string,
-    updateData: Partial<Pharmacy>
+    pharmacyData: Partial<Pharmacy>
   ): Promise<Pharmacy | null> {
     try {
       const repository = this.getPharmacyRepository();
-      await repository.update(id, updateData);
-      return await repository.findOneBy({ id });
+      // Don't allow updating the state directly through this method
+      if (pharmacyData.state) {
+        delete pharmacyData.state;
+      }
+      
+      await repository.update(id, pharmacyData);
+      return await this.getPharmacyById(id);
     } catch (error) {
-      logger.error(`Error updating pharmacy with id ${id}: `, error);
+      logger.error('Error in updatePharmacy: ', error);
+      return Promise.reject(error);
+    }
+  }
+  
+  // Update pharmacy state
+  static async updatePharmacyState(
+    id: string,
+    state: PharmacyState
+  ): Promise<Pharmacy | null> {
+    try {
+      const repository = this.getPharmacyRepository();
+      await repository.update(id, { state });
+      return await this.getPharmacyById(id);
+    } catch (error) {
+      logger.error('Error in updatePharmacyState: ', error);
       return Promise.reject(error);
     }
   }

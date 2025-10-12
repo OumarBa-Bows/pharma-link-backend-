@@ -1,16 +1,16 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-} from "typeorm";
-import { Listing } from "./Listing.entity";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { PharmacyState } from '../enums/PharmacyState.enum';
+import { User } from './User.entity';
+import { Zone } from './Zone.entity';
+
+export enum CustomerType {
+  PHARMACY = 'PHARMACY',
+  DEPOT = 'DEPOT'
+}
 
 @Entity("pharmacies")
 export class Pharmacy {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -19,30 +19,38 @@ export class Pharmacy {
   @Column()
   address: string;
 
-  @Column()
-  city: string;
+  @ManyToOne(() => Zone, { nullable: true })
+  @JoinColumn({ name: 'zoneId' })
+  zone: Zone;
 
-  @Column()
-  state: string;
+  @Column({ type: 'enum', enum: PharmacyState, default: PharmacyState.PENDING })
+  state: PharmacyState;
 
-  @Column()
-  zipCode: string;
-
-  @Column()
-  phone: string;
+  @Column({ unique: true })
+  code: string;
 
   @Column({ nullable: true })
-  email?: string;
+  doctorName: string;
 
-  @Column({ type: "boolean", default: true })
-  isActive: boolean;
+  @Column({ nullable: true })
+  managerName: string;
+
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ type: 'enum', enum: CustomerType, default: CustomerType.PHARMACY })
+  customerType: CustomerType;
+
+  @Column('point', { nullable: true })
+  location: string;
+
+  @OneToOne(() => User, { nullable: true })
+  @JoinColumn()
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-//   @OneToMany(() => Listing, (listing) => listing.pharmacy)
-//   listings: Listing[];
 }
