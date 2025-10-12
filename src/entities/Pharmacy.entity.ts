@@ -1,22 +1,20 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { PharmacyState } from '../enums/PharmacyState.enum';
+import { User } from './User.entity';
+import { Zone } from './Zone.entity';
+
+export enum CustomerType {
+  PHARMACY = 'PHARMACY',
+  DEPOT = 'DEPOT'
+}
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
 import { PharmacyState } from "../enums/PharmacyState";
 import { Zone } from "./Zone.entity";
 import { Customer } from "./Customer.entity";
-import { Listing } from "./Listing.entity";
 
 @Entity({ name: "pharmacies" })
 export class Pharmacy {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -27,16 +25,23 @@ export class Pharmacy {
 
   @Column({ unique: true })
   code: string;
+  @ManyToOne(() => Zone, { nullable: true })
+  @JoinColumn({ name: 'zoneId' })
+  zone: Zone;
 
   @Column({ nullable: true })
   email: string;
+  @Column({ type: 'enum', enum: PharmacyState, default: PharmacyState.PENDING })
+  state: PharmacyState;
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
+  @Column({ unique: true })
+  code: string;
 
   @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
-
+  
   @Column({ nullable: true })
   doctorName: string;
 
@@ -52,14 +57,22 @@ export class Pharmacy {
 
   @Column({ type: "point", nullable: true })
   location: string; // TypeORM ne supporte pas directement "point", on le mappe en string ou custom type
+  @Column({ nullable: true })
+  email: string;
 
   @Column({ nullable: true })
   zoneId: string;
+  @Column({ type: 'enum', enum: CustomerType, default: CustomerType.PHARMACY })
+  customerType: CustomerType;
 
   @Column({ nullable: true })
   customerId: number;
-  @Column({ type: "boolean", default: true })
-  isActive: boolean;
+  @Column('point', { nullable: true })
+  location: string;
+
+  @OneToOne(() => User, { nullable: true })
+  @JoinColumn()
+  user: User;
 
   @Column({
     type: "enum",
@@ -76,7 +89,6 @@ export class Pharmacy {
   customer: Customer;
   @UpdateDateColumn()
   updatedAt: Date;
-
   @ManyToOne(() => Zone)
   @JoinColumn({ name: "zoneId" })
   zone: Zone;
