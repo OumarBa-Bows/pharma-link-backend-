@@ -6,11 +6,13 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from "typeorm";
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
 import { PharmacyState } from "../enums/PharmacyState";
 import { Zone } from "./Zone.entity";
 import { Customer } from "./Customer.entity";
+import { Listing } from "./Listing.entity";
 
 @Entity({ name: "pharmacies" })
 export class Pharmacy {
@@ -56,6 +58,8 @@ export class Pharmacy {
 
   @Column({ nullable: true })
   customerId: number;
+  @Column({ type: "boolean", default: true })
+  isActive: boolean;
 
   @Column({
     type: "enum",
@@ -63,13 +67,30 @@ export class Pharmacy {
     default: PharmacyState.PENDING,
   })
   state: PharmacyState;
+  @CreateDateColumn()
+  createdAt: Date;
 
   // Relations
   @ManyToOne(() => Customer)
   @JoinColumn({ name: "customerId" })
   customer: Customer;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Zone)
   @JoinColumn({ name: "zoneId" })
   zone: Zone;
+  
+    @Column()
+  phone: string;
+  
+    @Column()
+  zipCode: string;
+  
+    managerName: string;
+  @Column()
+  state: string;
+  
+    @Column()
+  city: string;
 }
