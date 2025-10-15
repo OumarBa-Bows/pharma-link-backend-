@@ -17,6 +17,9 @@ export class User {
   @Column()
   name: string;
 
+  @Column({ nullable: true, default: '' })
+  phoneNumber: string;
+
   @Column({ unique: true }) // correspond à @unique(map: "User_email_key")
   email: string;
 

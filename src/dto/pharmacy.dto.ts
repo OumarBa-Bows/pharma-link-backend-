@@ -151,7 +151,7 @@ export class PharmacyResponseDto {
 
     if (pharmacy.user) {
       this.user = {
-        id: pharmacy.user.id,
+        id: `${pharmacy.user.id}`,
         email: pharmacy.user.email
       };
     }
