@@ -40,6 +40,7 @@ function checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
 
 export function authorize(roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
+<<<<<<< HEAD
     // JUST TESTING
 
     const token = getTokenFromRequest(req);
@@ -61,6 +62,29 @@ export function authorize(roles: string[]) {
       }
       res.locals.user = decoded;
 
+=======
+          // JUST TESTING
+
+          // const token = getTokenFromRequest(req);
+    // if (!token) {
+    //   logger.warn("401 Authorization token is missing");
+    //   Sentry.captureException("401 Authorization token is missing");
+    //   return res.status(401).send("Authorization token is missing");
+    // }
+
+    try {
+      // JUST TESTING
+      // const decoded = verifyAndDecodeToken(token);
+      // const userRoles = [] //getUserRolesFromPayload(decoded);
+      // logger.info(`User roles: ${userRoles} | Required: ${roles}`);
+      // if (!checkUserRoles(userRoles, roles)) {
+      //   Sentry.captureException(
+      //     `403 Insufficient permissions. User roles: ${userRoles}`
+      //   );
+      //   return res.status(403).send("Insufficient permissions");
+      // }
+      // res.locals.user = decoded;
+>>>>>>> cfea357 (deploy)
       next();
     } catch (error: any) {
       console.error(error);
