@@ -39,12 +39,14 @@ function checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
 
 export function authorize(roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const token = getTokenFromRequest(req);
-    if (!token) {
-      logger.warn("401 Authorization token is missing");
-      Sentry.captureException("401 Authorization token is missing");
-      return res.status(401).send("Authorization token is missing");
-    }
+          // JUST TESTING
+
+          // const token = getTokenFromRequest(req);
+    // if (!token) {
+    //   logger.warn("401 Authorization token is missing");
+    //   Sentry.captureException("401 Authorization token is missing");
+    //   return res.status(401).send("Authorization token is missing");
+    // }
 
     try {
       const decoded = verifyAndDecodeToken(token);
@@ -57,6 +59,7 @@ export function authorize(roles: string[]) {
         return res.status(403).send("Insufficient permissions");
       }
       res.locals.user = decoded;
+      
       next();
     } catch (error: any) {
       logger.error(error);
