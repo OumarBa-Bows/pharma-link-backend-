@@ -13,7 +13,7 @@ export class Article {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   code: string;
 
   @Column()

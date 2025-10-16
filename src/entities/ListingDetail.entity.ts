@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
 } from "typeorm";
 import { Listing } from "./Listing.entity";
 import { Article } from "./Article.entity";
@@ -16,10 +15,10 @@ export class ListingDetail {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ nullable: false })
   listingId: string;
 
-  @Column()
+  @Column({ nullable: false })
   articleId: string;
 
   @Column()
@@ -40,11 +39,15 @@ export class ListingDetail {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Listing, (listing) => listing.listingDetails)
+  @ManyToOne(() => Listing, (listing) => listing.listingDetails, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "listingId" })
   listing: Listing;
 
-  @ManyToOne(() => Article, (article) => article.listingDetails)
+  @ManyToOne(() => Article, (article) => article.listingDetails, {
+    eager: true, //charge automatiquement les articles liés
+  })
   @JoinColumn({ name: "articleId" })
   article: Article;
 }

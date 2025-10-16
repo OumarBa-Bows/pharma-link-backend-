@@ -1,4 +1,5 @@
-import { AppDataSource, logger } from "../../app";
+import { AppDataSource } from "../../configs/data-source";
+import { logger } from "../../app";
 import { getUserRepository } from "../../repository/userRepository";
 import { Role } from "../../entities/Role.entity";
 import { User } from "../../entities/User.entity";

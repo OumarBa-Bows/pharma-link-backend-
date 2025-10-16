@@ -1,4 +1,5 @@
-import { AppDataSource, logger } from "../../app";
+import { AppDataSource } from "../../configs/data-source";
+import { logger } from "../../app";
 import { SYSTEM_MESSAGES } from "../../configs/SystemMessage";
 import { Customer } from "../../entities/Customer.entity";
 import { Order } from "../../entities/Order.entity";

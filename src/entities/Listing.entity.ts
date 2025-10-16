@@ -19,7 +19,7 @@ export class Listing {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: "date", nullable: true })
   date?: Date;
 
   @CreateDateColumn()
@@ -28,9 +28,9 @@ export class Listing {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(
-    () => ListingDetail,
-    (listingDetail: ListingDetail) => listingDetail.listing
-  )
+  @OneToMany(() => ListingDetail, (ld) => ld.listing, {
+    cascade: true, //permet de sauvegarder les ListingDetails automatiquement
+    onDelete: "CASCADE", //garantit suppression automatique des ListingDetails
+  })
   listingDetails: ListingDetail[];
 }

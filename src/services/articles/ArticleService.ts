@@ -1,12 +1,16 @@
 import { logger } from "../../app";
 import { ArticleDto } from "../../interfaces/ArticleDto";
 import { getArticleRepository } from "../../repository/articleRepository";
+import { supabase } from "../../app";
 
 export class ArticleService {
   // Créer un article
-  static async createArticle(data: ArticleDto) {
+  static async createArticle(data: ArticleDto, image: any) {
     try {
       logger.info("Creating article with data:", data);
+      // Nom unique pour éviter les conflits
+      const imageLink = await this.uploadImage(image);
+      data.imageLink = imageLink;
       const articleRepo = getArticleRepository();
       const article = articleRepo.create(data);
       await articleRepo.save(article);
@@ -66,4 +70,46 @@ export class ArticleService {
       return Promise.reject(error);
     }
   }
+
+  /**
+ * Upload une image vers Supabase Storage et retourne l'URL publique.
+ *
+ * @param file - Fichier provenant de req.files.image
+ * @param bucketName - Nom du bucket Supabase (ex: "article-images")
+ * @param folder - Dossier dans le bucket (ex: "articles/")
+ * @returns L'URL publique du fichier uploadé
+ */
+ static async uploadImage(file: any, bucketName = "articles-images", folder = "images/"): Promise<string> {
+  try {
+    if (!file) {
+      return "";
+    }
+
+    // Nom unique pour éviter les collisions
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = `${folder}${fileName}`;
+
+    // Upload dans Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, file.data, {
+        contentType: file.mimetype,
+        upsert: false, // ne remplace pas si le fichier existe déjà
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Récupérer l’URL publique
+    const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+
+    if (!data?.publicUrl) {
+      throw new Error("Impossible de récupérer l'URL publique du fichier");
+    }
+
+    return data.publicUrl;
+  } catch (error: any) {
+    console.error("Erreur lors de l'upload Supabase:", error.message);
+    throw new Error("Échec de l'upload de l'image: " + error.message);
+  }
+ }
 }

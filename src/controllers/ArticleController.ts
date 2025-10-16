@@ -5,7 +5,9 @@ export class ArticleController {
   // Créer un article
   static create = async (req: Request, res: Response) => {
     try {
-      const article = await ArticleService.createArticle(req.body);
+     
+      const image = req.files?.image;
+      const article = await ArticleService.createArticle(req.body, image);
       return res.status(200).send({
         success: true,
         message: "Article created successfully",

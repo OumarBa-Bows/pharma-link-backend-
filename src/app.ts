@@ -1,4 +1,4 @@
-import fileUpload from "express-fileupload";
+import fileUpload, { UploadedFile } from "express-fileupload";
 import "reflect-metadata";
 import express, { Application } from "express";
 import { envConfig } from "./configs/env.config";
@@ -18,8 +18,7 @@ import cookieParser from "cookie-parser";
 import { createClient } from "@supabase/supabase-js";
 import winston from "winston";
 import * as Sentry from "@sentry/node";
-import { DataSource } from "typeorm";
-import { AppDataSourceConfig } from "./configs/TypeOrmDataSource";
+import { AppDataSource } from "./configs/data-source";
 import mainRouter from "./routes";
 
 const { createLogger, format, transports } = winston;
@@ -68,8 +67,28 @@ export const supabase = createClient(
 );
 
 const app: Application = express();
+//🧩 1️⃣ Middleware fileUpload — DOIT être avant express.json()
+app.use(
+  fileUpload({
+    createParentPath: true,
+    useTempFiles: false,
+  })
+);
+
+// 🧩 2️⃣ express.json() uniquement pour application/json
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      (req as any).rawBody = buf.toString();
+    },
+    type: (req) => {
+      const contentType = req.headers["content-type"] || "";
+      return contentType.includes("application/json");
+    },
+  })
+);
 app.use(cookieParser());
-app.use(fileUpload());
+
 
 const allowedOrigins = (
   process.env.ALLOWED_ORIGINS ||
@@ -92,20 +111,20 @@ app.use(
 );
 
 // app.use(express.json());
-app.use(
-  express.json({
-    verify: (req, res, buf) => {
-      req.rawBody = buf.toString();
-    },
-  })
-);
+// app.use(
+//   express.json({
+//     verify: (req, res, buf) => {
+//       req.rawBody = buf.toString();
+//     },
+//   })
+// );
 
-// API routes prefix
-app.use("/api", mainRouter);
 
 // Set the port for the server to listen on from environment or default to 3002
 const PORT = process.env.PORT || 6345;
-export const AppDataSource = new DataSource(AppDataSourceConfig);
+
+// API routes prefix
+app.use("/api", mainRouter);
 
 // Start the server and log the URL where it is running
 import bcrypt from "bcryptjs";

@@ -1,4 +1,4 @@
-import { AppDataSource } from "../app";
+import { AppDataSource } from "../configs/data-source";
 import { Role } from "../entities/Role.entity";
 import { Repository } from "typeorm";
 

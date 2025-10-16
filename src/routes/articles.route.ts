@@ -3,10 +3,11 @@ import { ArticleController } from "../controllers/ArticleController";
 import {
   createArticleValidator,
   updateArticleValidator,
+  imageValidator
 } from "../middlewares/article.middleware";
 
 const articeRoute = Router();
-articeRoute.post("/", createArticleValidator, ArticleController.create);
+articeRoute.post("/", createArticleValidator,imageValidator, ArticleController.create);
 articeRoute.post(
   "/update/:id",
   updateArticleValidator,
