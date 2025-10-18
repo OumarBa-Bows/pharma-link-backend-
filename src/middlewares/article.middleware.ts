@@ -9,13 +9,49 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+export const uploadExcelValidator = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const files = (req as any).files;
+  if (!files || !files.file) {
+    return res
+      .status(400)
+      .json({ error_name: "file_missing", msg: "Le fichier Excel est requis (champ 'file')." });
+  }
+
+  const file = Array.isArray(files.file) ? files.file[0] : files.file;
+  const allowed = [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+  ];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+
+  if (!allowed.includes(file.mimetype)) {
+    return res.status(400).json({
+      error_name: "file_type_invalid",
+      msg: "Le fichier doit être un Excel (.xlsx/.xls).",
+    });
+  }
+
+  if (file.size > maxSize) {
+    return res.status(400).json({
+      error_name: "file_size_invalid",
+      msg: "Le fichier ne doit pas dépasser 5MB.",
+    });
+  }
+
+  next();
+};
+
 // Validator pour l'image
 export const imageValidator = (req: Request, res: Response, next: NextFunction) => {
   const files = (req as any).files;
   if (!files || !files.image) return next();
 
   const file = Array.isArray(files.image) ? files.image[0] : files.image;
-  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
   const maxSize = 1024 * 1024; // 1MB
 
   if (!allowed.includes(file.mimetype)) {
@@ -52,7 +88,7 @@ export const createArticleValidator = [
       return true;
     }),
   body("description").optional().isString(),
-  body("expiryDate").optional(),
+  body("expiryDate").optional().isString(),
   body("barcode").optional().isString(),
   validate,
 ];
@@ -72,7 +108,7 @@ export const updateArticleValidator = [
     .withMessage("Le prix doit être un nombre positif."),
  
   body("description").optional().isString(),
-  body("expiryDate").optional().isISO8601().toDate(),
+  body("expiryDate").optional().isString(),
   body("barcode").optional().isString(),
   validate,
 ];

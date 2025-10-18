@@ -10,33 +10,32 @@ interface CreateListingDTO {
   name: string;
   description?: string;
   date?: Date;
-  articles: Array<{ articleId: string }>;
+  articleIds: Array<string>;
 }
 
 interface UpdateListingDTO {
   name?: string;
   description?: string;
   date?: Date;
-  articles?: Array<{ articleId: string }>;
+  articleIds?: Array<string>;
 }
 
 export class ListingService {
   static async createListing(data: CreateListingDTO) {
     try {
-      const { name, description, date, articles } = data;
-      const articleIds = articles.map((a) => a.articleId);
+      const { name, description, date, articleIds } = data;
       const articleEntities = await articleRepository.findBy({
         id: In(articleIds),
       });
 
-      if (articleEntities.length !== articles.length) {
+      if (articleEntities.length !== articleIds.length) {
         const foundIds = articleEntities.map((a) => a.id);
         const missing = articleIds.filter((id) => !foundIds.includes(id));
         throw new Error(`Articles non trouvés : ${missing.join(", ")}`);
       }
 
-      const listingDetails = articles.map((a) => {
-        const article = articleEntities.find((art) => art.id === a.articleId)!;
+      const listingDetails = articleIds.map((a) => {
+        const article = articleEntities.find((art) => art.id === a)!;
         const detail = new ListingDetail();
         detail.article = article;
         detail.articleId = article.id;
@@ -133,13 +132,13 @@ export class ListingService {
       listing.date = data.date ?? listing.date;
 
       // Mise à jour des articles (si fournis)
-      if (data.articles && data.articles.length > 0) {
-        const articleIds = data.articles.map((a) => a.articleId);
+      if (data.articleIds && data.articleIds.length > 0) {
+        const articleIds = data.articleIds.map((a) => a);
         const articleEntities = await articleRepository.findBy({
           id: In(articleIds),
         });
 
-        if (articleEntities.length !== data.articles.length) {
+        if (articleEntities.length !== data.articleIds.length) {
           throw new Error("Un ou plusieurs articles n'existent pas");
         }
 
@@ -147,9 +146,9 @@ export class ListingService {
         listing.listingDetails = [];
 
         // Crée les nouveaux
-        listing.listingDetails = data.articles.map((a) => {
+        listing.listingDetails = data.articleIds.map((a) => {
           const article = articleEntities.find(
-            (art) => art.id === a.articleId
+            (art) => art.id === a
           )!;
           const detail = new ListingDetail();
           detail.article = article;

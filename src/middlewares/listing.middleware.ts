@@ -14,19 +14,18 @@ export const createListingValidator = [
   body("description").optional().isString(),
   body("date")
     .optional()
-    .isISO8601()
-    .toDate()
+     .isString()
     .withMessage("La date doit être au format ISO8601."),
-  body("articles")
+  body("articleIds")
     .isArray({ min: 1 })
     .withMessage(
-      "Le champ 'articles' doit être un tableau contenant au moins un article."
+      "Le champ 'articleIds' doit être un tableau contenant au moins un article."
     ),
-  body("articles.*.articleId")
+  body("articleIds.*")
     .notEmpty()
     .isUUID()
     .withMessage("Chaque article doit contenir un identifiant (UUID) valide."),
-  validate,
+  validate,  
 ];
 
 export const updateListingValidator = [
@@ -37,14 +36,13 @@ export const updateListingValidator = [
   body("description").optional().isString(),
   body("date")
     .optional()
-    .isISO8601()
-    .toDate()
+    .isString()
     .withMessage("La date doit être au format ISO8601."),
-  body("articles")
+  body("articleIds")
     .optional()
     .isArray()
-    .withMessage("Le champ 'articles' doit être un tableau."),
-  body("articles.*.articleId")
+    .withMessage("Le champ 'articleIds' doit être un tableau."),
+  body("articleIds.*")
     .optional()
     .isUUID()
     .withMessage("Chaque article doit contenir un identifiant (UUID) valide."),
