@@ -135,4 +135,25 @@ export class UserService {
       return Promise.reject(error);
     }
   }
+
+    static async isHasRole(id: number) {
+    try {
+      const userRepo = getUserRepository();
+      const user = await userRepo.findOne({
+        where: { id },
+        relations: ["roles"],
+      });
+
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+      const roles = user.roles;
+      if (roles && roles.length === 0) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
 }

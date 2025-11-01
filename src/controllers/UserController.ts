@@ -112,4 +112,39 @@ export class UserController {
       });
     }
   };
+
+  static isHasRole = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = Number(id);
+      const hasRole = await UserService.isHasRole(userId);
+      return res.status(200).send({
+        hasRole
+      });
+    } catch (error: any) {
+      console.error("Error getHasRole : ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getHasRole",
+      });
+    }
+  };
+
+  static getConnectedUser = async (req: Request, res: Response) => {
+    try {
+      const { id } = res.locals.user as { id: number };
+      const user = await UserService.getUserById(Number(id));
+      return res.status(200).send({
+        success: true,
+        message: "User fetched successfully",
+        data: { user },
+      });
+    } catch (error: any) {
+      console.error("Error getConnectedUser : ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getConnectedUser",
+      });
+    }
+  };
 }
