@@ -18,7 +18,10 @@ export const uploadExcelValidator = (
   if (!files || !files.file) {
     return res
       .status(400)
-      .json({ error_name: "file_missing", msg: "Le fichier Excel est requis (champ 'file')." });
+      .json({
+        error_name: "file_missing",
+        msg: "Le fichier Excel est requis (champ 'file').",
+      });
   }
 
   const file = Array.isArray(files.file) ? files.file[0] : files.file;
@@ -46,7 +49,11 @@ export const uploadExcelValidator = (
 };
 
 // Validator pour l'image
-export const imageValidator = (req: Request, res: Response, next: NextFunction) => {
+export const imageValidator = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const files = (req as any).files;
   if (!files || !files.image) return next();
 
@@ -55,18 +62,30 @@ export const imageValidator = (req: Request, res: Response, next: NextFunction) 
   const maxSize = 1024 * 1024; // 1MB
 
   if (!allowed.includes(file.mimetype)) {
-    return res.status(400).json({ error_name:'image_type_invalid',msg: "L'image doit être au format JPEG, PNG ou WEBP." });
+    return res
+      .status(400)
+      .json({
+        error_name: "image_type_invalid",
+        msg: "L'image doit être au format JPEG, PNG ou WEBP.",
+      });
   }
 
   if (file.size > maxSize) {
-    return res.status(400).json({ error_name:'image_size_invalid',msg: "L'image ne doit pas dépasser 1MB." });
+    return res
+      .status(400)
+      .json({
+        error_name: "image_size_invalid",
+        msg: "L'image ne doit pas dépasser 1MB.",
+      });
   }
 
   next();
 };
 
 export const createArticleValidator = [
-  body("code").notEmpty().withMessage("Le code de l'article est requis."),
+  body("reference")
+    .notEmpty()
+    .withMessage("La référence de l'article est requise."),
   body("name").notEmpty().withMessage("Le nom de l'article est requis."),
   body("price")
     .isFloat({ min: 0 })
@@ -94,10 +113,10 @@ export const createArticleValidator = [
 ];
 
 export const updateArticleValidator = [
-  body("code")
+  body("reference")
     .optional()
     .notEmpty()
-    .withMessage("Le code de l'article est requis."),
+    .withMessage("La référence de l'article est requise."),
   body("name")
     .optional()
     .notEmpty()
@@ -106,7 +125,7 @@ export const updateArticleValidator = [
     .optional()
     .isFloat({ min: 0 })
     .withMessage("Le prix doit être un nombre positif."),
- 
+
   body("description").optional().isString(),
   body("expiryDate").optional().isString(),
   body("barcode").optional().isString(),

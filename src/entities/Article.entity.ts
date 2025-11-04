@@ -14,7 +14,7 @@ export class Article {
   id: string;
 
   @Column({ unique: true })
-  code: string;
+  reference: string;
 
   @Column()
   name: string;

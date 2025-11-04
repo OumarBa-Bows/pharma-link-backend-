@@ -136,7 +136,7 @@ export class UserService {
     }
   }
 
-    static async isHasRole(id: number) {
+  static async isHasRole(id: number) {
     try {
       const userRepo = getUserRepository();
       const user = await userRepo.findOne({
@@ -152,6 +152,26 @@ export class UserService {
         return false;
       }
       return true;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  static async updatePassword(id: number, newPassword: string) {
+    try {
+      const userRepo = getUserRepository();
+      const user = await userRepo.findOne({
+        where: { id },
+      });
+
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+      // Hash password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await userRepo.save(user);
+      return user;
     } catch (error) {
       return Promise.reject(error);
     }

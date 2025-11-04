@@ -1,6 +1,6 @@
 export interface ArticleDto {
   id: string;
-  code: string;
+  reference: string;
   name: string;
   price: number;
   imageLink?: string;

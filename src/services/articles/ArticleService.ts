@@ -22,14 +22,14 @@ export class ArticleService {
   }
 
   // Mettre à jour un article
-  static async updateArticle(id: string, data: ArticleDto,image:any) {
+  static async updateArticle(id: string, data: ArticleDto, image: any) {
     try {
       const articleById = await this.getArticleById(id);
-      if(articleById){
+      if (articleById) {
         this.deleteImage(articleById.imageLink ?? "");
       }
       const imageLink = await this.uploadImage(image);
-      data['imageLink'] = imageLink;
+      data["imageLink"] = imageLink;
       const articleRepo = getArticleRepository();
       const articleData = {
         ...data,
@@ -51,8 +51,8 @@ export class ArticleService {
   static async deleteArticle(id: string) {
     try {
       const articleRepo = getArticleRepository();
-       const articleById = await this.getArticleById(id);
-      if(articleById){
+      const articleById = await this.getArticleById(id);
+      if (articleById) {
         this.deleteImage(articleById.imageLink ?? "");
       }
       const article = await articleRepo.delete({ id });
@@ -83,46 +83,50 @@ export class ArticleService {
   }
 
   /**
- * Upload une image vers Supabase Storage et retourne l'URL publique.
- *
- * @param file - Fichier provenant de req.files.image
- * @param bucketName - Nom du bucket Supabase (ex: "article-images")
- * @param folder - Dossier dans le bucket (ex: "articles/")
- * @returns L'URL publique du fichier uploadé
- */
- static async uploadImage(file: any, bucketName = "articles-images", folder = "images/"): Promise<string> {
-  try {
-    if (!file) {
-      return "";
+   * Upload une image vers Supabase Storage et retourne l'URL publique.
+   *
+   * @param file - Fichier provenant de req.files.image
+   * @param bucketName - Nom du bucket Supabase (ex: "article-images")
+   * @param folder - Dossier dans le bucket (ex: "articles/")
+   * @returns L'URL publique du fichier uploadé
+   */
+  static async uploadImage(
+    file: any,
+    bucketName = "articles-images",
+    folder = "images/"
+  ): Promise<string> {
+    try {
+      if (!file) {
+        return "";
+      }
+
+      // Nom unique pour éviter les collisions
+      const fileName = `${Date.now()}_${file.name}`;
+      const filePath = `${folder}${fileName}`;
+
+      // Upload dans Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, file.data, {
+          contentType: file.mimetype,
+          upsert: false, // ne remplace pas si le fichier existe déjà
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Récupérer l’URL publique
+      const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+
+      if (!data?.publicUrl) {
+        throw new Error("Impossible de récupérer l'URL publique du fichier");
+      }
+
+      return data.publicUrl;
+    } catch (error: any) {
+      console.error("Erreur lors de l'upload Supabase:", error.message);
+      throw new Error("Échec de l'upload de l'image: " + error.message);
     }
-
-    // Nom unique pour éviter les collisions
-    const fileName = `${Date.now()}_${file.name}`;
-    const filePath = `${folder}${fileName}`;
-
-    // Upload dans Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(filePath, file.data, {
-        contentType: file.mimetype,
-        upsert: false, // ne remplace pas si le fichier existe déjà
-      });
-
-    if (uploadError) throw uploadError;
-
-    // Récupérer l’URL publique
-    const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
-
-    if (!data?.publicUrl) {
-      throw new Error("Impossible de récupérer l'URL publique du fichier");
-    }
-
-    return data.publicUrl;
-  } catch (error: any) {
-    console.error("Erreur lors de l'upload Supabase:", error.message);
-    throw new Error("Échec de l'upload de l'image: " + error.message);
   }
- }
 
   /**
    * Supprime une image de Supabase Storage à partir de son URL publique.
@@ -144,7 +148,9 @@ export class ArticleService {
       const marker = `/object/public/${bucketName}/`;
       const idx = imageUrl.indexOf(marker);
       if (idx === -1) {
-        throw new Error("URL invalide: impossible d'extraire le chemin du fichier");
+        throw new Error(
+          "URL invalide: impossible d'extraire le chemin du fichier"
+        );
       }
       const filePath = imageUrl.substring(idx + marker.length);
 
@@ -164,15 +170,20 @@ export class ArticleService {
 
   /**
    * Importe des articles depuis un fichier Excel.
-   * Les lignes doivent contenir les colonnes: code, name, price, description, expiryDate, barcode, imageLink.
-   * Les articles sont upsert par le champ unique `code`.
+   * Les lignes doivent contenir les colonnes: reference, name, price, description, expiryDate, barcode, imageLink.
+   * Les articles sont upsert par le champ unique `reference`.
    *
    * @param file - Fichier Excel (ex: req.files.file) dont le buffer est accessible via file.data
    * @returns { created, updated, errors, items }
    */
   static async importArticlesFromExcel(
     file: any
-  ): Promise<{ created: number; updated: number; errors: string[]; items: any[] }> {
+  ): Promise<{
+    created: number;
+    updated: number;
+    errors: string[];
+    items: any[];
+  }> {
     try {
       if (!file || !file.data) {
         throw new Error("Fichier Excel manquant");
@@ -208,15 +219,25 @@ export class ArticleService {
         const r = rows[i];
         const lineNo = i + 2; // header on line 1
         try {
-          const code = (r.code ?? r.Code ?? r.CODE ?? "").toString().trim();
+          const reference = (r.reference ?? r.Reference ?? r.REFERENCE ?? "")
+            .toString()
+            .trim();
           const name = (r.name ?? r.Name ?? r.Nom ?? "").toString().trim();
           const priceRaw = r.price ?? r.Price ?? r.prix ?? r.Prix;
           const description = r.description ?? r.Description ?? undefined;
-          const expiryRaw = r.expiryDate ?? r.ExpiryDate ?? r.expiry ?? r.Expiry ?? r.dateExp ?? r.DateExp;
-          const barcode = r.barcode ?? r.Barcode ?? r.codeBarre ?? r.CodeBarre ?? undefined;
-          const imageLink = r.imageLink ?? r.ImageLink ?? r.image ?? r.Image ?? undefined;
+          const expiryRaw =
+            r.expiryDate ??
+            r.ExpiryDate ??
+            r.expiry ??
+            r.Expiry ??
+            r.dateExp ??
+            r.DateExp;
+          const barcode =
+            r.barcode ?? r.Barcode ?? r.codeBarre ?? r.CodeBarre ?? undefined;
+          const imageLink =
+            r.imageLink ?? r.ImageLink ?? r.image ?? r.Image ?? undefined;
 
-          if (!code) throw new Error("code manquant");
+          if (!reference) throw new Error("reference manquant");
           if (!name) throw new Error("name manquant");
           if (priceRaw === null || priceRaw === undefined || priceRaw === "") {
             throw new Error("price manquant");
@@ -224,12 +245,15 @@ export class ArticleService {
 
           let price: number;
           if (typeof priceRaw === "number") price = priceRaw;
-          else price = parseFloat((priceRaw as string).toString().replace(",", "."));
+          else
+            price = parseFloat(
+              (priceRaw as string).toString().replace(",", ".")
+            );
           if (!isFinite(price)) throw new Error("price invalide");
 
           const expiryDate = parseDate(expiryRaw);
 
-          const existing = await articleRepo.findOne({ where: { code } });
+          const existing = await articleRepo.findOne({ where: { reference } });
           if (existing) {
             existing.name = name;
             existing.price = price;
@@ -241,7 +265,7 @@ export class ArticleService {
             updated += 1;
             items.push({
               id: existing.id,
-              code: existing.code,
+              reference: existing.reference,
               name: existing.name,
               price: existing.price,
               description: existing.description,
@@ -251,7 +275,7 @@ export class ArticleService {
             });
           } else {
             const createdEntity = articleRepo.create({
-              code,
+              reference,
               name,
               price,
               description,
@@ -263,7 +287,7 @@ export class ArticleService {
             created += 1;
             items.push({
               id: createdEntity.id,
-              code: createdEntity.code,
+              reference: createdEntity.reference,
               name: createdEntity.name,
               price: createdEntity.price,
               description: createdEntity.description,

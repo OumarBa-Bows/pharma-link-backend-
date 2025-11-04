@@ -1,11 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
-import { User } from "./User.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
 import { PharmacyState } from "../enums/PharmacyState";
 import { Zone } from "./Zone.entity";
+import { Customer } from "./Customer.entity";
 
-
-@Entity({name:"pharmacies"})
+@Entity({ name: "pharmacies" })
 export class Pharmacy {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -37,9 +44,9 @@ export class Pharmacy {
   @Column({
     type: "enum",
     enum: PharmacyCustomerType,
-    default: PharmacyCustomerType.PHARMACY
+    default: PharmacyCustomerType.PHARMACY,
   })
-  customerType:PharmacyCustomerType;
+  customerType: PharmacyCustomerType;
 
   @Column({ type: "point", nullable: true })
   location: string; // TypeORM ne supporte pas directement "point", on le mappe en string ou custom type
@@ -48,19 +55,19 @@ export class Pharmacy {
   zoneId: string;
 
   @Column({ nullable: true })
-  userId: number;
+  customerId: number;
 
   @Column({
     type: "enum",
     enum: PharmacyState,
-    default: PharmacyState.PENDING
+    default: PharmacyState.PENDING,
   })
   state: PharmacyState;
 
   // Relations
-  @ManyToOne(() => User)
-  @JoinColumn({ name: "userId" })
-  user: User;
+  @ManyToOne(() => Customer)
+  @JoinColumn({ name: "customerId" })
+  customer: Customer;
 
   @ManyToOne(() => Zone)
   @JoinColumn({ name: "zoneId" })

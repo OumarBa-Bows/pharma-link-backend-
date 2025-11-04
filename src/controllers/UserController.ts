@@ -119,7 +119,7 @@ export class UserController {
       const userId = Number(id);
       const hasRole = await UserService.isHasRole(userId);
       return res.status(200).send({
-        hasRole
+        hasRole,
       });
     } catch (error: any) {
       console.error("Error getHasRole : ", error);
@@ -144,6 +144,26 @@ export class UserController {
       return res.status(500).send({
         success: false,
         message: error.message || "Error getConnectedUser",
+      });
+    }
+  };
+
+  static updatePassword = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = Number(id);
+      const { newPassword } = req.body;
+
+      await UserService.updatePassword(userId, newPassword);
+      return res.status(200).send({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (error: any) {
+      console.error("Error updating password: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error updating password",
       });
     }
   };
