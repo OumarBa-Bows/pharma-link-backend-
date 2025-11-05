@@ -20,6 +20,9 @@ export class Customer {
   @Column({ select: false })
   password: string;
 
+  @Column({ default: "inactive" })
+  status: string;
+
   @CreateDateColumn({
     name: "createdAt",
     type: "timestamp",

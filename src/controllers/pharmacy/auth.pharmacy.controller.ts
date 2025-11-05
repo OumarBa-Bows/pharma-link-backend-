@@ -4,15 +4,36 @@ import { AuthPharmacyService } from "../../services/pharmacy/auth.pharmacy.servi
 const authService = new AuthPharmacyService();
 
 export class AuthPharmacyController {
-  /**
-   * Contrôleur pour la connexion utilisateur
-   */
+  static async createPharmacyCustomer(req: Request, res: Response) {
+    const body = req.body;
+    try {
+      const existingCustomer = await authService.findCustomerByEmail(
+        body.email
+      );
+      if (existingCustomer) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email déjà utilisé" });
+      }
+      const customer = await authService.createPharmacyCustomer(body);
+      return res
+        .status(201)
+        .json({ success: true, message: "Inscription réussie", customer });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Erreur serveur", error });
+    }
+  }
+
   static async login(req: Request, res: Response) {
     const { email, password } = req.body;
     try {
       const result = await authService.login(email, password);
       if (!result) {
-        return res.status(401).json({ message: "Identifiants invalides" });
+        return res
+          .status(401)
+          .json({ success: false, message: "Identifiants invalides" });
       }
       // Définir le token dans un cookie HTTP-only
       res.cookie("pharmacy_token", result.token, {
@@ -21,9 +42,11 @@ export class AuthPharmacyController {
         sameSite: "strict",
         maxAge: 24 * 60 * 60 * 1000, // 24h
       });
-      return res.status(200).json({ customer: result.customer });
+      return res.status(200).json({ success: true, customer: result.customer });
     } catch (error) {
-      return res.status(500).json({ message: "Erreur serveur", error });
+      return res
+        .status(500)
+        .json({ success: false, message: "Erreur serveur", error });
     }
   }
   /**
