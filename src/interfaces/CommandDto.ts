@@ -2,6 +2,7 @@ import { UUID } from "crypto";
 import { ArticleDto } from "./ArticleDto";
 
 export interface CreateCommandDTO {
+  id?:any,
   // Obligatoire
   distributorid: number;       // référence vers Distributor
   code: string;                // code unique ou identifiant de commande

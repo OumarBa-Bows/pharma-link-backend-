@@ -70,6 +70,33 @@ export class CommandController {
     }
   };
 
+  static update = async (req: Request, res: Response) => {
+
+    logger.info("Start update Command")
+     
+    // Start the querry runner insatance
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const commandes = await CommandService.updateCommand(queryRunner,req.body);
+      await queryRunner.commitTransaction()
+      return res.status(200).send({
+        success: true,
+        message: "Command  updated successfully",
+        data: { commandes },
+      });
+    } catch (error: any) {
+      console.error("updateCommandError", error);
+      queryRunner.rollbackTransaction();
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error update update",
+      });
+    }finally{
+      await queryRunner.release();
+    }
+  };
 
 
  
