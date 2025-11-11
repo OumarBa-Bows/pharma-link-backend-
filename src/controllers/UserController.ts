@@ -173,7 +173,7 @@ export class UserController {
       const { id } = res.locals.user as { id: number };
       const { newPassword ,currentPassword} = req.body;
 
-      await UserService.resetPassword(id, `${currentPassword}`, `${newPassword}`);
+      await UserService.resetPassword(id, currentPassword, newPassword);
       return res.status(200).send({
         success: true,
         message: "Password reset successfully",
