@@ -168,6 +168,33 @@ export class UserService {
         throw new Error("Utilisateur introuvable");
       }
       // Hash password
+      const hashedPassword = await bcrypt.hash(`${newPassword}`, 10);
+      user.password = hashedPassword;
+      await userRepo.save(user);
+      return user;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  static async resetPassword(id: number, currentPassword: string, newPassword: string) {
+    try {
+      console.log("currentPassword", currentPassword);
+      console.log("newPassword", newPassword);
+
+      const userRepo = getUserRepository();
+      const user = await userRepo.findOne({
+        where: { id },
+      });
+
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+      const isPasswordValid = await bcrypt.compare(currentPassword, `${user.password}`);
+      if (!isPasswordValid) {
+        throw new Error("Mot de passe invalide");
+      }
+      // Hash password
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       user.password = hashedPassword;
       await userRepo.save(user);

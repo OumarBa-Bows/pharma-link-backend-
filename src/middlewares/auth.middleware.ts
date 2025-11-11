@@ -50,7 +50,7 @@ export function authorize(roles: string[]) {
       const decoded = verifyAndDecodeToken(token);
       const userRoles = getUserRolesFromPayload(decoded);
       logger.info(`User roles: ${userRoles} | Required: ${roles}`);
-      if (!checkUserRoles(userRoles, roles)) {
+      if (roles.length != 0 && !checkUserRoles(userRoles, roles)) {
         Sentry.captureException(
           `403 Insufficient permissions. User roles: ${userRoles}`
         );

@@ -154,7 +154,7 @@ export class UserController {
       const userId = Number(id);
       const { newPassword } = req.body;
 
-      await UserService.updatePassword(userId, newPassword);
+      await UserService.updatePassword(userId, `${newPassword}`);
       return res.status(200).send({
         success: true,
         message: "Password updated successfully",
@@ -167,4 +167,23 @@ export class UserController {
       });
     }
   };
+
+  static resetPassword = async (req: Request, res: Response) => {
+    try {
+      const { id } = res.locals.user as { id: number };
+      const { newPassword ,currentPassword} = req.body;
+
+      await UserService.resetPassword(id, `${currentPassword}`, `${newPassword}`);
+      return res.status(200).send({
+        success: true,
+        message: "Password reset successfully",
+      });
+    } catch (error: any) {
+      console.error("Error resetting password: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error resetting password",
+      });
+    }
+  }
 }

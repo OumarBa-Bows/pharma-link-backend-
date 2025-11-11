@@ -27,3 +27,17 @@ export const updateUserPasswordValidator = [
   body("newPassword").notEmpty().withMessage("New password is required."),
   validate,
 ];
+
+export const resetUserPasswordValidator = [
+  body("newPassword").notEmpty().withMessage("New password is required."),
+  body("currentPassword").notEmpty().withMessage("Current password is required."),
+  body("confirmPassword").notEmpty().withMessage("Confirm password is required."),
+  body("confirmPassword").custom((value, { req }) => {
+    if (value !== req.body.newPassword) {
+      throw new Error("Passwords do not match");
+    }
+    return true;
+  }),
+
+  validate,
+];
