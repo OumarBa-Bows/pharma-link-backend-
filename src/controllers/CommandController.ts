@@ -98,6 +98,34 @@ export class CommandController {
     }
   };
 
+  static updateStatus = async (req: Request, res: Response) => {
+
+    logger.info("Start update status Command")
+     
+    // Start the querry runner insatance
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const commandes = await CommandService.updateCommandStatus(queryRunner,req.body);
+      await queryRunner.commitTransaction()
+      return res.status(200).send({
+        success: true,
+        message: "Command  updated  successfuly successfully",
+        data: { commandes },
+      });
+    } catch (error: any) {
+      console.error("updateCommandStatusError", error);
+      queryRunner.rollbackTransaction();
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error update status",
+      });
+    }finally{
+      await queryRunner.release();
+    }
+  };
+
 
  
 }

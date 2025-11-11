@@ -136,4 +136,24 @@ export const updateCommandValidator = [
   validate
 ];
 
+export const updateStatusCommandValidator = [
+
+   body("id")
+    .exists().withMessage("Le champ id est obligatoire")
+    .isInt().withMessage("id doit être un entier"),
+  // ✅ distributor_id : obligatoire, numérique
+
+
+  // ✅ status : obligatoire, string non vide
+  body("status")
+    .exists().withMessage("Le champ status est obligatoire")
+    .isString().withMessage("status doit être une chaîne de caractères")
+    .notEmpty().withMessage("status ne doit pas être vide"),
+    
+
+
+
+  validate
+];
+
 

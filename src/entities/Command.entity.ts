@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColum
 import { Distributor } from "./Distributor.entity";
 import { CommandDetails } from "./CommandDetails.entity";
 import { Pharmacy } from "./Pharmacy.entity";
+import { COMMAND_STATUS } from "../enums/CommandStatus";
 
 
 @Entity({name:"command"})
@@ -13,8 +14,8 @@ export class Command {
   @Column()
   code: string;
 
-  @Column()
-  status: string;
+  @Column({type:"enum", enum:COMMAND_STATUS, default:COMMAND_STATUS.pending})
+  status: COMMAND_STATUS|COMMAND_STATUS.pending;
 
   @Column({ nullable: true })
   commandreference: string;
