@@ -1,4 +1,4 @@
-import { QueryRunner } from "typeorm";
+import { In, Not, QueryRunner } from "typeorm";
 import { CreateCommandDTO } from "../../interfaces/CommandDto";
 import { Command } from "../../entities/Command.entity";
 import { CommandDetails } from "../../entities/CommandDetails.entity";
@@ -6,6 +6,7 @@ import { ArticleService } from "../articles/ArticleService";
 import { getCommandRepository } from "../../repository/commandRepository";
 import { getCommandDetailsRepository } from "../../repository/commandDetailsRepository";
 import { Article } from "../../entities/Article.entity";
+import { COMMAND_STATUS } from "../../enums/CommandStatus";
 
 const commandRepository = getCommandRepository();
 const commandDetailsRepo = getCommandDetailsRepository();
@@ -153,6 +154,35 @@ export class CommandService {
             await commandDetailsRepo.save(commandDetailsSavingResult)
             return ;
             
+        } catch (error) {
+            throw error;
+        }
+
+    }
+
+
+    static async updateCommandStatus(queryRunner:QueryRunner,data:{
+        id:number,
+        status:COMMAND_STATUS
+    }
+    ){
+
+        try {
+            if(!data.id) throw new Error(`Command id undefined in object passed for update`)
+
+            const commandRepo =  queryRunner.manager.getRepository(Command);
+         
+            const currentCommand = await commandRepo.findOne({
+                where:{
+                    id:data.id
+                }
+            })
+
+            if(!currentCommand) throw new Error(`Command with id ${data.id} is not found`)
+           
+            currentCommand.status = data.status??currentCommand.status;
+            await commandRepo.save(currentCommand)
+            return currentCommand;            
         } catch (error) {
             throw error;
         }

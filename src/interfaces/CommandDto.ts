@@ -1,12 +1,13 @@
 import { UUID } from "crypto";
 import { ArticleDto } from "./ArticleDto";
+import { COMMAND_STATUS } from "../enums/CommandStatus";
 
 export interface CreateCommandDTO {
   id?:any,
   // Obligatoire
   distributorid: number;       // référence vers Distributor
   code: string;                // code unique ou identifiant de commande
-  status: string;              // status de la commande
+  status: COMMAND_STATUS|COMMAND_STATUS.pending;              // status de la commande
   pharmacyId: UUID;          // référence vers Pharmacy (UUID)
 
   articles:{
