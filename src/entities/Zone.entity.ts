@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Pharmacy } from './Pharmacy.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 
 
 @Entity()
@@ -25,8 +24,4 @@ export class Zone {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
-
-  // Relation avec Pharmacy
-  @OneToMany(() => Pharmacy, pharmacy => pharmacy.zone)
-  pharmacies: Pharmacy[];
 }

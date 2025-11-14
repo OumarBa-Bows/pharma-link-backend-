@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { logger } from '../app';
 import { PharmacyService } from '../services/pharmacies/PharmacyService';
-import { Request, Response } from "express";
 
 export class PharmacyController {
     static async getAllPharmacies(req: Request, res: Response) {
