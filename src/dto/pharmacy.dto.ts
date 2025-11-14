@@ -1,11 +1,8 @@
-import { Pharmacy } from '../entities/Pharmacy.entity';
+import { CustomerType, Pharmacy } from '../entities/Pharmacy.entity';
 import { IsString, IsEmail, IsOptional, IsEnum, IsUUID, IsObject, IsLatitude, IsLongitude, ValidateIf } from 'class-validator';
 import { PharmacyState } from '../enums/PharmacyState.enum';
 
-export enum CustomerType {
-  PHARMACY = 'PHARMACY',
-  DEPOT = 'DEPOT'
-}
+
 
 export class CreatePharmacyDto {
   @IsString()
