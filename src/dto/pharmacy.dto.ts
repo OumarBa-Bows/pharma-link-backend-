@@ -1,6 +1,7 @@
-import { CustomerType, Pharmacy } from '../entities/Pharmacy.entity';
+import {  Pharmacy } from '../entities/Pharmacy.entity';
 import { IsString, IsEmail, IsOptional, IsEnum, IsUUID, IsObject, IsLatitude, IsLongitude, ValidateIf } from 'class-validator';
 import { PharmacyState } from '../enums/PharmacyState.enum';
+import { PharmacyCustomerType } from '../enums/PharmacyCustomerType';
 
 
 
@@ -39,9 +40,9 @@ export class CreatePharmacyDto {
   @IsOptional()
   wilayaId?: string;
 
-  @IsEnum(CustomerType)
+  @IsEnum(PharmacyCustomerType)
   @IsOptional()
-  customerType?: CustomerType;
+  customerType?: PharmacyCustomerType;
 
   @IsUUID()
   @IsOptional()
@@ -85,9 +86,9 @@ export class UpdatePharmacyDto {
   @IsOptional()
   wilayaId?: string;
 
-  @IsEnum(CustomerType)
+  @IsEnum(PharmacyCustomerType)
   @IsOptional()
-  customerType?: CustomerType;
+  customerType?: PharmacyCustomerType;
 
   @IsUUID()
   @IsOptional()
@@ -112,12 +113,12 @@ export class PharmacyResponseDto {
   managerName?: string;
   email?: string;
   state: PharmacyState;
-  customerType: CustomerType;
+  customerType: PharmacyCustomerType;
   location?: string;
   zone?: {
     id: string;
     name: string;
-  };
+  }; 
   user?: {
     id: string;
     email: string;
