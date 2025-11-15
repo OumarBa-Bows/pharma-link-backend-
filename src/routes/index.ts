@@ -7,6 +7,7 @@ import { authorize } from "../middlewares/auth.middleware";
 import commandRoute from "./commands.route";
 import authPharmacyRoute from "./pharmacy/auth.pharmacy.route";
 import pharmacyRoute from "./pharmacies.routes";
+import summaryRoute from "./summary.route";
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/listings", authorize(["admin", "article"]), listingRoute);
 router.use("/commands", authorize(["admin", "article"]), commandRoute);
 router.use("/pharmacies", authorize(["admin", "pharmacy"]), pharmacyRoute);
 router.use("/pharmacy/auth", authPharmacyRoute);
+router.use("/summary", summaryRoute);
 
 export default router;
