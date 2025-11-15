@@ -1,20 +1,18 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { PharmacyState } from '../enums/PharmacyState.enum';
+import { User } from './User.entity';
+import { Zone } from './Zone.entity';
+
+// export enum CustomerType {
+//   PHARMACY = 'PHARMACY',
+//   DEPOT = 'DEPOT'
+// }
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
-import { PharmacyState } from "../enums/PharmacyState";
-import { Zone } from "./Zone.entity";
 import { Customer } from "./Customer.entity";
 
 @Entity({ name: "pharmacies" })
 export class Pharmacy {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -25,16 +23,21 @@ export class Pharmacy {
 
   @Column({ unique: true })
   code: string;
+  @ManyToOne(() => Zone, { nullable: true })
+  @JoinColumn({ name: 'zoneId' })
+  zone: Zone;
 
   @Column({ nullable: true })
   email: string;
+  @Column({ type: 'enum', enum: PharmacyState, default: PharmacyState.PENDING })
+  state: PharmacyState;
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
   @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
-
+  
   @Column({ nullable: true })
   doctorName: string;
 
@@ -57,19 +60,22 @@ export class Pharmacy {
   @Column({ nullable: true })
   customerId: number;
 
-  @Column({
-    type: "enum",
-    enum: PharmacyState,
-    default: PharmacyState.PENDING,
-  })
-  state: PharmacyState;
+  @OneToOne(() => User, { nullable: true })
+  @JoinColumn()
+  user: User;
+
 
   // Relations
   @ManyToOne(() => Customer)
   @JoinColumn({ name: "customerId" })
   customer: Customer;
-
-  @ManyToOne(() => Zone)
-  @JoinColumn({ name: "zoneId" })
-  zone: Zone;
+  
+    @Column({ nullable: true })
+  phone: string;
+  
+    @Column({ nullable: true })
+  zipCode: string;
+  
+    @Column({ nullable: true })
+  city: string;
 }

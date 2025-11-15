@@ -1,0 +1,11 @@
+<<<<<<< HEAD
+import { AppDataSource } from "../configs/data-source";
+=======
+import { AppDataSource } from "../app";
+>>>>>>> 88808e7 (Setting up pharmacy entity)
+import { Pharmacy } from "../entities/Pharmacy.entity";
+import { Repository } from "typeorm";
+
+export function getPharmacyRepository(): Repository<Pharmacy> {
+  return AppDataSource.getRepository(Pharmacy);
+}

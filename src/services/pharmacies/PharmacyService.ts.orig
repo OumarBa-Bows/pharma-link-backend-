@@ -1,8 +1,14 @@
-import { Like, FindOptionsWhere } from 'typeorm';
+<<<<<<< HEAD
 import { getPharmacyRepository } from "../../repository/pharmacyRepository";
 import { logger } from "../../app";
 import { PharmacyDto } from "../../interfaces/PharmacyDto";
+import { Like } from 'typeorm';
+=======
+import { Like, FindOptionsWhere } from 'typeorm';
+>>>>>>> 7cb9d7d (edit pharmacy cols)
+import { logger } from '../../app';
 import { Pharmacy } from '../../entities/Pharmacy.entity';
+import { getPharmacyRepository } from '../../repository/pharmacyRepository';
 import { PharmacyState } from '../../enums/PharmacyState.enum';
 
 export interface PaginatedResult<T> {
@@ -53,7 +59,8 @@ export class PharmacyService {
       return Promise.reject(error);
     }
   }
-   static async getAllPharmacies() {
+<<<<<<< HEAD
+    static async getAllPharmacies() {
         try {
             const pharmacyRepo = getPharmacyRepository();
             const pharmacies = await pharmacyRepo.find({
@@ -64,6 +71,20 @@ export class PharmacyService {
             logger.error(error);
             return Promise.reject(error);
         }
+=======
+
+  // Get a single pharmacy by ID
+  static async getPharmacyById(id: string): Promise<Pharmacy | null> {
+    try {
+      const repository = this.getPharmacyRepository();
+      return await repository.findOne({
+        where: { id },
+        relations: ['zone', 'user']
+      });
+    } catch (error) {
+      logger.error('Error in getPharmacyById: ', error);
+      return Promise.reject(error);
+>>>>>>> 7cb9d7d (edit pharmacy cols)
     }
     static async getPharmacyById(id: string) {
         try {
@@ -78,22 +99,16 @@ export class PharmacyService {
             return Promise.reject(error);
         }
     }
-
-
-    // static async createPharmacy(pharmacy: PharmacyDto) {
-    //     try {
-    //         const pharmacyRepo = getPharmacyRepository();
-    //         const newPharmacy = await pharmacyRepo.save(pharmacy);
-    //         return newPharmacy;
-    //     } catch (error) {
-    //         logger.error(error);
-    //         return Promise.reject(error);
-    //     }
-    // }
-    
-    
-       
-
+    static async createPharmacy(pharmacy: PharmacyDto) {
+        try {
+            const pharmacyRepo = getPharmacyRepository();
+            const newPharmacy = await pharmacyRepo.save(pharmacy);
+            return newPharmacy;
+        } catch (error) {
+            logger.error(error);
+            return Promise.reject(error);
+        }
+    }
     
     // Create a new pharmacy
   static async createPharmacy(pharmacyData: Partial<Pharmacy>): Promise<Pharmacy> {
@@ -110,28 +125,18 @@ export class PharmacyService {
       return Promise.reject(error);
     }
   }
-  
-  //  static async createPharmacy(pharmacy: PharmacyDto) {
-  //       try {
-  //           const pharmacyRepo = getPharmacyRepository();
-  //           const newPharmacy = await pharmacyRepo.save(pharmacy);
-  //           return newPharmacy;
-  //       } catch (error) {
-  //           logger.error(error);
-  //           return Promise.reject(error);
-  //       }
-  //   }
 
-    // static async updatePharmacy(id: string, pharmacy: PharmacyDto) {
-    //     try {
-    //         const pharmacyRepo = getPharmacyRepository();
-    //         const updatedPharmacy = await pharmacyRepo.update(id, pharmacy);
-    //         return updatedPharmacy;
-    //     } catch (error) {
-    //         logger.error(error);
-    //         return Promise.reject(error);
-    //     }
-    // }
+<<<<<<< HEAD
+    static async updatePharmacy(id: string, pharmacy: PharmacyDto) {
+        try {
+            const pharmacyRepo = getPharmacyRepository();
+            const updatedPharmacy = await pharmacyRepo.update(id, pharmacy);
+            return updatedPharmacy;
+        } catch (error) {
+            logger.error(error);
+            return Promise.reject(error);
+        }
+    }
 
     static async deletePharmacy(id: string) {
         try {
@@ -146,6 +151,10 @@ export class PharmacyService {
     
     
      static async updatePharmacy(
+=======
+  // Update a pharmacy
+  static async updatePharmacy(
+>>>>>>> 7cb9d7d (edit pharmacy cols)
     id: string,
     pharmacyData: Partial<Pharmacy>
   ): Promise<Pharmacy | null> {
@@ -178,16 +187,4 @@ export class PharmacyService {
       return Promise.reject(error);
     }
   }
-
-  // Delete a pharmacy
-  // static async deletePharmacy(id: string): Promise<boolean> {
-  //   try {
-  //     const repository = this.getPharmacyRepository();
-  //     const result = await repository.delete(id);
-  //     return result.affected ? result.affected > 0 : false;
-  //   } catch (error) {
-  //     logger.error(`Error deleting pharmacy with id ${id}: `, error);
-  //     return Promise.reject(error);
-  //   }
-  // }
 }

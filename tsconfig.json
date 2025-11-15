@@ -108,5 +108,10 @@
   },
   "include": [
     "src/**/*" // This line is to include all your TypeScript files in the src directory for compilation
+  ],
+  "exclude": [
+    "src/Events/**/*",
+    "src/utils/notifications/**/*",
+    "src/utils/n8n-webhook.ts"
   ]
 }
