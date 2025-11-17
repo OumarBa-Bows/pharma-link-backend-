@@ -9,8 +9,7 @@ const router = Router();
 
 // Connexion
 router.post("/login", loginValidator, AuthPharmacyController.login);
-// Déconnexion
-router.post("/logout", AuthPharmacyController.logout);
+
 // Inscription
 router.post(
   "/register",

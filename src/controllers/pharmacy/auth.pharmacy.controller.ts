@@ -36,28 +36,15 @@ export class AuthPharmacyController {
           .json({ success: false, message: "Identifiants invalides" });
       }
       // Définir le token dans un cookie HTTP-only
-      res.cookie("pharmacy_token", result.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // true en prod
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000, // 24h
+      return res.status(200).json({
+        success: true,
+        customer: result.customer,
+        accessToken: result.token,
       });
-      return res.status(200).json({ success: true, customer: result.customer });
     } catch (error) {
       return res
         .status(500)
         .json({ success: false, message: "Erreur serveur", error });
     }
-  }
-  /**
-   * Contrôleur pour la déconnexion utilisateur
-   */
-  static logout(req: Request, res: Response) {
-    res.clearCookie("pharmacy_token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    return res.status(200).json({ message: "Déconnexion réussie" });
   }
 }

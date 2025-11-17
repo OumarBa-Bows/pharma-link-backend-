@@ -18,6 +18,6 @@ export const AppDataSourceConfig: DataSourceOptions = {
     max: 50,
     idleTimeoutMillis: 30000,
   },
-  logger: new QueryCustomLogger(),
+  // logger: new QueryCustomLogger(),
   entities: [__dirname + "/../entities/**/*.{ts,js}"],
 };

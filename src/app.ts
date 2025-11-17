@@ -89,36 +89,11 @@ app.use(
 );
 app.use(cookieParser());
 
-
-const allowedOrigins = (
-  process.env.ALLOWED_ORIGINS ||
-  "http://localhost:4200,http://localhost,http://127.0.0.1"
-)
-  .split(",")
-  .map((origin) => origin.trim());
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
+    origin: "*",
   })
 );
-
-// app.use(express.json());
-// app.use(
-//   express.json({
-//     verify: (req, res, buf) => {
-//       req.rawBody = buf.toString();
-//     },
-//   })
-// );
-
 
 // Set the port for the server to listen on from environment or default to 3002
 const PORT = process.env.PORT || 6345;

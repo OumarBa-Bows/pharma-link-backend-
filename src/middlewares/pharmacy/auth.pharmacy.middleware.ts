@@ -6,7 +6,6 @@ import { body, ValidationError, validationResult } from "express-validator";
 
 // Helper: extrait le token de la requête (cookie ou header)
 function getTokenFromRequest(req: Request): string | undefined {
-  if (req.cookies.token) return req.cookies.token;
   const authHeader = req.headers.authorization;
   if (authHeader)
     return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;

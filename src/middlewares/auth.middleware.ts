@@ -6,8 +6,9 @@ import { body, ValidationError, validationResult } from "express-validator";
 
 // Helper: extrait le token de la requête (cookie ou header)
 function getTokenFromRequest(req: Request): string | undefined {
-  if (req.cookies.token) return req.cookies.token;
+  // if (req.cookies.token) return req.cookies.token;
   const authHeader = req.headers.authorization;
+  console.log(`Token ${authHeader}`);
   if (authHeader)
     return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
   return undefined;
@@ -39,9 +40,9 @@ function checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
 
 export function authorize(roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-          // JUST TESTING
+    // JUST TESTING
 
-          const token = getTokenFromRequest(req);
+    const token = getTokenFromRequest(req);
     if (!token) {
       logger.warn("401 Authorization token is missing");
       Sentry.captureException("401 Authorization token is missing");
@@ -59,9 +60,10 @@ export function authorize(roles: string[]) {
         return res.status(403).send("Insufficient permissions");
       }
       res.locals.user = decoded;
-      
+
       next();
     } catch (error: any) {
+      console.error(error);
       logger.error(error);
       if (error instanceof jwt.TokenExpiredError) {
         Sentry.captureException("401 Token expired");
