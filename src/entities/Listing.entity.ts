@@ -20,7 +20,7 @@ export class Listing {
   description?: string;
 
   @Column({ type: "date", nullable: true })
-  date?: Date;
+  end_date?: Date;
 
   @CreateDateColumn()
   createdAt: Date;

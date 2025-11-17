@@ -3,7 +3,7 @@ import { ArticleDto } from "../../interfaces/ArticleDto";
 import { getArticleRepository } from "../../repository/articleRepository";
 import { supabase } from "../../app";
 import * as XLSX from "xlsx";
-
+ 
 export class ArticleService {
   // Créer un article
   static async createArticle(data: ArticleDto, image: any) {

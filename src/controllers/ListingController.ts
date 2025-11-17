@@ -88,4 +88,28 @@ export class ListingController {
       });
     }
   };
+
+  static import = async (req: Request, res: Response) => {
+    try {
+      const file = (req as any).files?.file;
+      if (!file) {
+        return res.status(400).send({
+          success: false,
+          message: "Le fichier Excel est requis (champ 'file').",
+        });
+      }
+      const listing = await ListingService.importListing(file);
+      return res.status(200).send({
+        success: true,
+        message: "Listing imported successfully",
+        data: { listing },
+      });
+    } catch (error: any) {
+      console.error("Error importing listing: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error importing listing",
+      });
+    }
+  };
 }

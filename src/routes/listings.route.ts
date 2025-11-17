@@ -3,6 +3,7 @@ import { ListingController } from "../controllers/ListingController";
 import {
   createListingValidator,
   updateListingValidator,
+  uploadExcelValidator
 } from "../middlewares/listing.middleware";
 
 const listingRoute = Router();
@@ -15,5 +16,6 @@ listingRoute.post(
 listingRoute.get("/", ListingController.getAll);
 listingRoute.get("/:id", ListingController.getById);
 listingRoute.get("/delete/:id", ListingController.delete);
+listingRoute.post("/import", uploadExcelValidator,ListingController.import);
 
 export default listingRoute;

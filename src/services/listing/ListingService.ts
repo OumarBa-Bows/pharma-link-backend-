@@ -2,6 +2,7 @@ import { In } from "typeorm";
 import { ListingDetail } from "../../entities/ListingDetail.entity";
 import { getArticleRepository } from "../../repository/articleRepository";
 import { getListingRepository } from "../../repository/listingRepository";
+import * as XLSX from "xlsx";
 
 const listingRepository = getListingRepository();
 const articleRepository = getArticleRepository();
@@ -9,21 +10,21 @@ const articleRepository = getArticleRepository();
 interface CreateListingDTO {
   name: string;
   description?: string;
-  date?: Date;
+  end_date?: Date;
   articleIds: Array<string>;
 }
 
 interface UpdateListingDTO {
   name?: string;
   description?: string;
-  date?: Date;
+  end_date?: Date;
   articleIds?: Array<string>;
 }
 
 export class ListingService {
   static async createListing(data: CreateListingDTO) {
     try {
-      const { name, description, date, articleIds } = data;
+      const { name, description, end_date, articleIds } = data;
       const articleEntities = await articleRepository.findBy({
         id: In(articleIds),
       });
@@ -47,7 +48,7 @@ export class ListingService {
       const listing = listingRepository.create({
         name,
         description,
-        date,
+        end_date : end_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         listingDetails,
       });
 
@@ -57,7 +58,7 @@ export class ListingService {
         id: savedListing.id,
         name: savedListing.name,
         description: savedListing.description,
-        date: savedListing.date,
+        end_date: savedListing.end_date,
         createdAt: savedListing.createdAt,
         updatedAt: savedListing.updatedAt,
       };
@@ -76,7 +77,7 @@ export class ListingService {
         id: l.id,
         name: l.name,
         description: l.description,
-        date: l.date,
+        end_date: l.end_date,
         createdAt: l.createdAt,
         updatedAt: l.updatedAt,
       }));
@@ -100,7 +101,7 @@ export class ListingService {
         id: listing.id,
         name: listing.name,
         description: listing.description,
-        date: listing.date,
+        end_date: listing.end_date,
         createdAt: listing.createdAt,
         updatedAt: listing.updatedAt,
         listingDetails: listing.listingDetails.map((ld) => ({
@@ -129,7 +130,7 @@ export class ListingService {
       // Mise à jour des champs simples
       listing.name = data.name ?? listing.name;
       listing.description = data.description ?? listing.description;
-      listing.date = data.date ?? listing.date;
+      listing.end_date = data.end_date ?? listing.end_date;
 
       // Mise à jour des articles (si fournis)
       if (data.articleIds && data.articleIds.length > 0) {
@@ -165,7 +166,7 @@ export class ListingService {
         id: updatedListing.id,
         name: updatedListing.name,
         description: updatedListing.description,
-        date: updatedListing.date,
+        end_date: updatedListing.end_date,
         createdAt: updatedListing.createdAt,
         updatedAt: updatedListing.updatedAt,
       };
@@ -183,5 +184,106 @@ export class ListingService {
     } catch (error) {
       return Promise.reject(error);
     }
+  }
+
+  static async importListing(file: any) {
+    try {
+      if (!file || !file.data) {
+        throw new Error("Fichier invalide ou manquant");
+      }
+
+      const workbook = XLSX.read(file.data, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      if (!sheetName) {
+        throw new Error("Aucune feuille trouvée dans le fichier Excel");
+      }
+
+      const worksheet = workbook.Sheets[sheetName];
+      const rows: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: null });
+
+      if (!rows || rows.length === 0) {
+        throw new Error("Aucune donnée trouvée dans le fichier Excel");
+      }
+
+      const rawReferences: string[] = rows.map((r) => {
+        const keys = Object.keys(r || {});
+        const key = keys.find((k) => {
+          const kk = String(k).toLowerCase().trim();
+          return kk === "reference" || kk === "ref";
+        });
+        const val = key ? r[key] : null;
+        if (val === null || val === undefined) return "";
+        if (typeof val === "number") return String(val);
+        if (typeof val === "string") return val;
+        return String(val);
+      });
+
+      const references = rawReferences
+        .map((s) => String(s || "").trim())
+        .filter((s) => s.length > 0);
+
+      if (references.length === 0) {
+        throw new Error("Aucune référence valide trouvée dans le fichier");
+      }
+
+      const uniqueRefs = Array.from(new Set(references));
+
+      const articleEntities = await articleRepository.findBy({
+        reference: In(uniqueRefs),
+      });
+
+      if (articleEntities.length !== uniqueRefs.length) {
+        const found = articleEntities.map((a) => a.reference);
+        const missing = uniqueRefs.filter((id) => !found.includes(id));
+        throw new Error(`Article non trouvé reference: ${missing.join(", ")}`);
+      }
+
+      const byRef = new Map<string, (typeof articleEntities)[number]>(
+        articleEntities.map((a) => [a.reference, a])
+      );
+
+      const listingDetails = references.map((ref) => {
+        const article = byRef.get(ref)!;
+        const detail = new ListingDetail();
+        detail.article = article;
+        detail.articleId = article.id;
+        detail.name = article.name;
+        detail.status = "active";
+        return detail;
+      });
+
+      const listing = listingRepository.create({
+        name: this.generateListingDescription(),
+        description: this.generateListingDescription(),
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        listingDetails,
+      });
+
+      const savedListing = await listingRepository.save(listing);
+
+      return {
+        id: savedListing.id,
+        name: savedListing.name,
+        description: savedListing.description,
+        end_date: savedListing.end_date,
+        createdAt: savedListing.createdAt,
+        updatedAt: savedListing.updatedAt,
+      };
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  static generateListingDescription(): string {
+    const now = new Date();
+    const formatted =
+      "Liste des articles pour le " +
+      now.getDate().toString().padStart(2, '0') + "/" +
+      (now.getMonth() + 1).toString().padStart(2, '0') + "/" +
+      now.getFullYear() +
+      " à " +
+      now.getHours().toString().padStart(2, '0') + ":" +
+      now.getMinutes().toString().padStart(2, '0');
+    return formatted;
   }
 }
