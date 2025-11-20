@@ -79,6 +79,27 @@ export class ArticleController {
     }
   };
 
+  // Récupérer les articles paginés
+  static getPerPage = async (req: Request, res: Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const result = await ArticleService.getArticlesPaginated(page, limit);
+      return res.status(200).send({
+        success: true,
+        message: "Articles retrieved successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error getting paginated articles: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting paginated articles",
+      });
+    }
+  };
+
   // Récupérer un article par ID
   static getById = async (req: Request, res: Response) => {
     try {

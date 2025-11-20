@@ -112,7 +112,7 @@ async function createDefaultAdmin() {
   const roleRepo = AppDataSource.getRepository(Role);
 
   // Créer les rôles s'ils n'existent pas
-  const roleNames = ["admin", "article", "user"];
+  const roleNames = ["admin", "article", "user", "pharmacy", "commande"];
   const roles: Role[] = [];
   for (const name of roleNames) {
     let role = await roleRepo.findOneBy({ name });

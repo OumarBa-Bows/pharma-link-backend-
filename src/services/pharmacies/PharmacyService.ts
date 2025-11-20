@@ -152,9 +152,9 @@ export class PharmacyService {
     try {
       const repository = this.getPharmacyRepository();
       // Don't allow updating the state directly through this method
-      if (pharmacyData.state) {
-        delete pharmacyData.state;
-      }
+      // if (pharmacyData.state) {
+      //   delete pharmacyData.state;
+      // }
       
       await repository.update(id, pharmacyData);
       return await this.getPharmacyById(id);

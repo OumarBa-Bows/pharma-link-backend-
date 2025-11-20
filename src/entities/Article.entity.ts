@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from "typeorm";
 import { ListingDetail } from "./ListingDetail.entity";
+import { ArticleCategory } from "../enums/ArticleCategory";
 
 @Entity("articles")
 export class Article {
@@ -22,11 +23,17 @@ export class Article {
   @Column("float")
   price: number;
 
+  @Column("int", {default: 0})
+  availableQuantity: number;
+  
   @Column({ nullable: true })
   imageLink?: string;
 
   @Column({ nullable: true })
   description?: string;
+
+  @Column({ type: "enum", enum: ArticleCategory, default: ArticleCategory.DEFAULT, nullable: true })
+  category: ArticleCategory;
 
   @Column({ type: "date", nullable: true })
   expiryDate?: Date;
@@ -38,7 +45,7 @@ export class Article {
   createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date; 
 
   @OneToMany(() => ListingDetail, (ld) => ld.article)
   listingDetails: ListingDetail[];

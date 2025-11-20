@@ -5,5 +5,7 @@ const pharmacyRoute = Router();
 
 pharmacyRoute.get("/", PharmacyController.getAllPharmacies);
 pharmacyRoute.get("/:id", PharmacyController.getPharmacyById);
+pharmacyRoute.put("/:id", PharmacyController.update);
+
 
 export default pharmacyRoute;

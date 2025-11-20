@@ -72,6 +72,30 @@ export class ArticleService {
     }
   }
 
+  // Récupérer les articles paginés
+  static async getArticlesPaginated(page: number = 1, limit: number = 10) {
+    try {
+      const articleRepo = getArticleRepository();
+      const [data, total] = await articleRepo.findAndCount({
+        order: { createdAt: "DESC" },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data,
+        total,
+        page: +page,
+        limit: +limit,
+        totalPages,
+      };
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
   // Récupérer un article par ID
   static async getArticleById(id: string) {
     try {
