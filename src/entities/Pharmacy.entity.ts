@@ -44,7 +44,16 @@ export class Pharmacy {
   @Column({ nullable: true })
   managerName: string;
 
-  @Column({
+  @Column({  nullable: false, default: "" })
+  managerPhone: string;
+
+  @Column({ nullable: false, default: "" })
+  doctorPhone: string;
+
+  @Column({ nullable: false, default: "" })
+  user_id: string;
+
+  @Column({ 
     type: "enum",
     enum: PharmacyCustomerType,
     default: PharmacyCustomerType.PHARMACY,

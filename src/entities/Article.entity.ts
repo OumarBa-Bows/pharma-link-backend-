@@ -38,6 +38,8 @@ export class Article {
   @Column({ type: "date", nullable: true })
   expiryDate?: Date;
 
+  
+
   @Column({ nullable: true })
   barcode?: string;
 
