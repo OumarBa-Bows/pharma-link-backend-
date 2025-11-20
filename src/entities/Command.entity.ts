@@ -17,6 +17,9 @@ export class Command {
   @Column({type:"enum", enum:COMMAND_STATUS, default:COMMAND_STATUS.pending})
   status: COMMAND_STATUS|COMMAND_STATUS.pending;
 
+  @Column({ type: "boolean", default: false }) 
+  viewed: boolean;
+
   @Column({ nullable: true })
   commandreference: string;
 
