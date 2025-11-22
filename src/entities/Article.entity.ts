@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { ListingDetail } from "./ListingDetail.entity";
-import { ArticleCategory } from "../enums/ArticleCategory";
+import { Category } from "./Category.entity";
 
 @Entity("articles")
 export class Article {
@@ -19,6 +21,13 @@ export class Article {
 
   @Column()
   name: string;
+  
+  @Column( { nullable: true })
+  categoryId : number;
+
+  @ManyToOne(() => Category, (category) => category.articles, { nullable: true })
+  @JoinColumn({ name: "categoryId" })
+  category: Category;
 
   @Column("float")
   price: number;
@@ -31,9 +40,6 @@ export class Article {
 
   @Column({ nullable: true })
   description?: string;
-
-  @Column({ type: "enum", enum: ArticleCategory, default: ArticleCategory.DEFAULT, nullable: true })
-  category: ArticleCategory;
 
   @Column({ type: "date", nullable: true })
   expiryDate?: Date;
@@ -51,4 +57,6 @@ export class Article {
 
   @OneToMany(() => ListingDetail, (ld) => ld.article)
   listingDetails: ListingDetail[];
+
+ 
 }

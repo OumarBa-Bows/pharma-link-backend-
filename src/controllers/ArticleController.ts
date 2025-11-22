@@ -163,4 +163,21 @@ export class ArticleController {
       });
     }
   };
+
+  static getCategories = async(req: Request, res: Response) =>{
+    try {
+      const categories = await ArticleService.getCategories();
+      return res.status(200).send({
+        success: true,
+        message: "Categories retrieved successfully",
+        data: { categories },
+      });
+    } catch (error: any) {
+      console.error("Error getting categories: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting categories",
+      });
+    }
+  }
 }

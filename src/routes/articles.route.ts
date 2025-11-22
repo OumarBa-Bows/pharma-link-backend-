@@ -19,5 +19,6 @@ articeRoute.get("/paginated/limit", ArticleController.getPerPage);
 articeRoute.get("/:id", ArticleController.getById);
 articeRoute.get("/delete/:id", ArticleController.delete);
 articeRoute.post("/upload", uploadExcelValidator, ArticleController.upload);
+articeRoute.get("/categories/get", ArticleController.getCategories);
 
 export default articeRoute;

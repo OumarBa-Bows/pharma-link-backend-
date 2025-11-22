@@ -4,6 +4,7 @@ export interface ArticleDto {
   name: string;
   price: number;
   imageLink?: string;
+  categoryId?: string;
   description?: string;
   expiryDate?: Date;
   barcode?: string;

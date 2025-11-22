@@ -3,17 +3,30 @@ import { ArticleDto } from "../../interfaces/ArticleDto";
 import { getArticleRepository } from "../../repository/articleRepository";
 import { supabase } from "../../app";
 import * as XLSX from "xlsx";
- 
+import { getCategoryRepository } from "../../repository/categoryRepository";
+
 export class ArticleService {
   // Créer un article
   static async createArticle(data: ArticleDto, image: any) {
     try {
       logger.info("Creating article with data:", data);
-      // Nom unique pour éviter les conflits
-      const imageLink = await this.uploadImage(image);
-      data.imageLink = imageLink;
+      // Upload d'image uniquement si fourni
+      let imageLink = data.imageLink ?? "";
+      if (image) {
+        imageLink = await this.uploadImage(image);
+      }
       const articleRepo = getArticleRepository();
-      const article = articleRepo.create(data);
+      const articleData = {
+        ...data,
+        imageLink,
+        ...(data.price !== undefined && {
+          price:
+            typeof (data as any).price === "string"
+              ? parseFloat((data as any).price as any)
+              : data.price,
+        }),
+      } as any;
+      const article = articleRepo.create(articleData);
       await articleRepo.save(article);
       return article;
     } catch (error) {
@@ -24,22 +37,32 @@ export class ArticleService {
   // Mettre à jour un article
   static async updateArticle(id: string, data: ArticleDto, image: any) {
     try {
-      const articleById = await this.getArticleById(id);
-      if (articleById) {
-        this.deleteImage(articleById.imageLink ?? "");
-      }
-      const imageLink = await this.uploadImage(image);
-      data["imageLink"] = imageLink;
       const articleRepo = getArticleRepository();
+      const existing = await this.getArticleById(id);
+      if (!existing) {
+        throw new Error("Article introuvable");
+      }
+
+      // Préserver l'image existante si aucune nouvelle image n'est fournie
+      let imageLink = existing.imageLink ?? "";
+      if (image) {
+        const newImageLink = await this.uploadImage(image);
+        if (existing.imageLink) {
+          await this.deleteImage(existing.imageLink);
+        }
+        imageLink = newImageLink;
+      }
+
       const articleData = {
         ...data,
+        imageLink,
         ...(data.price !== undefined && {
           price:
             typeof data.price === "string"
               ? parseFloat(data.price)
               : data.price,
         }),
-      };
+      } as any;
       const article = await articleRepo.update({ id }, articleData);
       return article;
     } catch (error) {
@@ -66,7 +89,13 @@ export class ArticleService {
   static async getAllArticles() {
     try {
       const articleRepo = getArticleRepository();
-      return await articleRepo.find();
+      const articles = await articleRepo.find({
+        relations: { category: true },
+      });
+      return articles.map((a: any) => ({
+        ...a,
+        category: a?.category?.name ?? null,
+      }));
     } catch (error) {
       return Promise.reject(error);
     }
@@ -80,12 +109,16 @@ export class ArticleService {
         order: { createdAt: "DESC" },
         skip: (page - 1) * limit,
         take: limit,
+        relations: { category: true },
       });
 
       const totalPages = Math.ceil(total / limit);
 
       return {
-        data,
+        data: data.map((a: any) => ({
+          ...a,
+          category: a?.category?.name ?? null,
+        })),
         total,
         page: +page,
         limit: +limit,
@@ -100,7 +133,15 @@ export class ArticleService {
   static async getArticleById(id: string) {
     try {
       const articleRepo = getArticleRepository();
-      return await articleRepo.findOneBy({ id });
+      const article: any = await articleRepo.findOne({
+        where: { id },
+        relations: { category: true },
+      });
+      if (!article) return null;
+      return {
+        ...article,
+        category: article?.category?.name ?? null,
+      } as any;
     } catch (error) {
       return Promise.reject(error);
     }
@@ -329,6 +370,17 @@ export class ArticleService {
     } catch (error: any) {
       console.error("Erreur lors de l'import Excel:", error.message);
       throw new Error("Échec de l'import des articles: " + error.message);
+    }
+  }
+
+  static async getCategories(){
+    try {
+      const categoryRepo = getCategoryRepository();
+      const categories = await categoryRepo.find();
+      return categories;
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération des catégories:", error.message);
+      throw new Error("Échec de la récupération des catégories: " + error.message);
     }
   }
 }
