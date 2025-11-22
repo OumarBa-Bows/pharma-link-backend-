@@ -86,20 +86,23 @@ export class ArticleService {
   }
 
   // Récupérer tous les articles
-  static async getAllArticles() {
-    try {
-      const articleRepo = getArticleRepository();
-      const articles = await articleRepo.find({
-        relations: { category: true },
-      });
-      return articles.map((a: any) => ({
-        ...a,
-        category: a?.category?.name ?? null,
-      }));
-    } catch (error) {
-      return Promise.reject(error);
-    }
+ static async getAllArticles() {
+  try {
+    const articleRepo = getArticleRepository();
+    const articles = await articleRepo.find({
+      order: { createdAt: "DESC" } ,
+      relations: { category: true },
+    });
+
+    return articles.map(a => ({
+      ...a,
+      category: a.category?.name ?? null  // on remplace l'objet par son nom
+    }));
+  } catch (error) {
+    return Promise.reject(error);
   }
+}
+
 
   // Récupérer les articles paginés
   static async getArticlesPaginated(page: number = 1, limit: number = 10) {
@@ -109,16 +112,12 @@ export class ArticleService {
         order: { createdAt: "DESC" },
         skip: (page - 1) * limit,
         take: limit,
-        relations: { category: true },
       });
 
       const totalPages = Math.ceil(total / limit);
 
       return {
-        data: data.map((a: any) => ({
-          ...a,
-          category: a?.category?.name ?? null,
-        })),
+        data,
         total,
         page: +page,
         limit: +limit,
@@ -133,15 +132,7 @@ export class ArticleService {
   static async getArticleById(id: string) {
     try {
       const articleRepo = getArticleRepository();
-      const article: any = await articleRepo.findOne({
-        where: { id },
-        relations: { category: true },
-      });
-      if (!article) return null;
-      return {
-        ...article,
-        category: article?.category?.name ?? null,
-      } as any;
+      return await articleRepo.findOne({ where :{id}, relations: { category: true }});
     } catch (error) {
       return Promise.reject(error);
     }
