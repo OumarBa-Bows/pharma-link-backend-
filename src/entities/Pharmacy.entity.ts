@@ -62,26 +62,13 @@ export class Pharmacy {
 
   @Column({ nullable: true })
   zoneId: string;
-
-  @Column({ nullable: true })
-  customerId: number;
-
-  @OneToOne(() => User, { nullable: true })
-  @JoinColumn()
-  user: User;
-
-
-  // Relations
-  @ManyToOne(() => Customer)
-  @JoinColumn({ name: "customerId" })
-  customer: Customer;
   
-    @Column({ nullable: true })
+  @Column({ nullable: true })
   phone: string;
   
-    @Column({ nullable: true })
+  @Column({ nullable: true })
   zipCode: string;
   
-    @Column({ nullable: true })
+  @Column({ nullable: true })
   city: string;
 }
