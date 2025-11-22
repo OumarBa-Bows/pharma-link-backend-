@@ -7,7 +7,7 @@ import { COMMAND_STATUS } from "../enums/CommandStatus";
 
 @Entity({name:"command"})
 export class Command {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn("increment")
   id: number;
 
 
