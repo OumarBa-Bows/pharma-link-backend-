@@ -3,10 +3,6 @@ import { PharmacyState } from '../enums/PharmacyState.enum';
 import { User } from './User.entity';
 import { Zone } from './Zone.entity';
 
-// export enum CustomerType {
-//   PHARMACY = 'PHARMACY',
-//   DEPOT = 'DEPOT'
-// }
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
 import { Customer } from "./Customer.entity";
 import { UUID } from 'crypto';
