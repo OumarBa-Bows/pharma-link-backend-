@@ -75,6 +75,20 @@ export class CommandService {
     }
     }
 
+     static async getAllCommands() {
+    try {
+      const commands = await commandRepository.find({
+        
+        relations: ["details"],
+      });
+
+      return commands;
+      
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    }
+
 
     static async updateCommand(queryRunner:QueryRunner,data:CreateCommandDTO
     ){

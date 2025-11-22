@@ -109,6 +109,29 @@ export class CommandController {
     }
   };
 
+  static getAllByDistributor = async (req: Request, res: Response) => {
+
+   
+     
+   
+    try {
+      const commandes = await CommandService.getAllCommands();
+    
+      return res.status(200).send({
+        success: true,
+        message: "Command  updated  successfuly successfully",
+        data: { commandes },
+      });
+    } catch (error: any) {
+      ;
+    
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error update status",
+      });
+    }
+  };
+
 
  
 }
