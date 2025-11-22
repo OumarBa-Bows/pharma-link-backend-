@@ -35,17 +35,6 @@ export class Command {
   @Column()
   pharmacyId: string;
 
-  @Column({name:"distibutorid"})
-  distributorid: number;
-
-  // Relations
-  @ManyToOne(() => Distributor, distributor => distributor.commands, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "distributorid" })
-  distributor: Distributor;
-
-  @ManyToOne(() => Distributor)
-  @JoinColumn({ name: "distributor_id" })
-  mainDistributor: Distributor;
 
   @ManyToOne(() => Pharmacy)
   @JoinColumn({ name: "pharmacyId" })

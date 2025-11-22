@@ -64,7 +64,7 @@ export class CommandService {
     static async getCommandById(data:{id: number,distibutorId:number}) {
     try {
       const command = await commandRepository.findOne({
-        where: { id:data.id,distributorid:data.distibutorId },
+        where: { id:data.id },
         relations: ["details"],
       });
 
@@ -75,22 +75,6 @@ export class CommandService {
     }
     }
 
-    static async getCommandByDistributorId(data:
-        {
-        distibutorId:number
-    }){
-        try {
-        const commands = await commandRepository.find({
-            where: { distributorid:data.distibutorId },
-            relations: ["details"],
-        });
-
-        return commands;
-        
-        } catch (error) {
-        return Promise.reject(error);
-        }
-    }
 
     static async updateCommand(queryRunner:QueryRunner,data:CreateCommandDTO
     ){

@@ -25,7 +25,4 @@ export class Distributor {
   @Column({ default: true, nullable: true })
   is_active: boolean;
 
-  // Relation avec Command
-  @OneToMany(() => Command, command => command.distributor)
-  commands: Command[];
 }

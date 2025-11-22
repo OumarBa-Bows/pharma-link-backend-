@@ -35,23 +35,6 @@ export class CommandController {
     }
   };
 
-  static getAllByDistributor = async (req: Request, res: Response) => {
-    try {
-      const commands = await CommandService.getCommandByDistributorId(req.body);
-      return res.status(200).send({
-        success: true,
-        message: "Commands retrieved successfully",
-        data: { commands },
-      });
-    } catch (error: any) {
-      console.error("Error getting listings: ", error);
-      return res.status(500).send({
-        success: false,
-        message: error.message || "Error getting listings",
-      });
-    }
-  };
-
   static getById = async (req: Request, res: Response) => {
     try {
       

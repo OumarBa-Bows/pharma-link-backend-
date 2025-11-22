@@ -69,7 +69,6 @@ export class DashboardService {
       id: c.id,
       code: c.code,
       pharmacy: c.pharmacy?.name || "",
-      distributor: c.distributor?.name,
       status: String(c.status),
       date: c.date ? new Date(c.date).toISOString() : "",
     }));

@@ -15,7 +15,7 @@ router.use("/auth", authRoute);
 router.use("/articles", authorize(["admin", "article"]), articeRoute);
 router.use("/users", userRoute);
 router.use("/listings", authorize(["admin", "article"]), listingRoute);
-router.use("/commands", authorize(["admin", "supabase", "commande"]), commandRoute);
+router.use("/commands", authorize(["admin", "PHARMACY", "commande"]), commandRoute);
 router.use("/pharmacies", authorize(["admin", "pharmacy"]), pharmacyRoute);
 router.use("/pharmacy/auth", authPharmacyRoute);
 router.use("/summary", summaryRoute);

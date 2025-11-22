@@ -11,10 +11,7 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
 
 
 export const createCommandValidator = [
-  // ✅ distributor_id : obligatoire, numérique
-  body("distributorid")
-    .exists().withMessage("Le champ distributor_id est obligatoire")
-    .isInt().withMessage("distributor_id doit être un entier"),
+  
 
   // ✅ code : obligatoire, string non vide
   body("code")
@@ -76,10 +73,6 @@ export const updateCommandValidator = [
    body("id")
     .exists().withMessage("Le champ id est obligatoire")
     .isInt().withMessage("id doit être un entier"),
-  // ✅ distributor_id : obligatoire, numérique
-  body("distributorid")
-    .exists().withMessage("Le champ distributor_id est obligatoire")
-    .isInt().withMessage("distributor_id doit être un entier"),
 
   // ✅ code : obligatoire, string non vide
   body("code")
