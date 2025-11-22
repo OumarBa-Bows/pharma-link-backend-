@@ -6,7 +6,7 @@ import userRoute from "./users.route";
 import { authorize } from "../middlewares/auth.middleware";
 import commandRoute from "./commands.route";
 import authPharmacyRoute from "./pharmacy/auth.pharmacy.route";
-import pharmacyRoute from "./pharmacies.routes";
+import pharmacyRoute from "./pharmacies.route";
 import summaryRoute from "./summary.route";
 
 const router = Router();

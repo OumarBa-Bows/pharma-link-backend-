@@ -3,6 +3,13 @@ import { PharmacyController } from "../controllers/PharmacyController";
 
 const router = Router();
 
+
+// Get all pharmacies
+router.get("/", PharmacyController.getAllPharmacies);
+
+// Get a single pharmacy by ID
+router.get("/:id", PharmacyController.getPharmacyById);
+
 // Create a new pharmacy
 router.post("/", PharmacyController.create);
 

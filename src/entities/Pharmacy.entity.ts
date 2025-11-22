@@ -9,6 +9,7 @@ import { Zone } from './Zone.entity';
 // }
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
 import { Customer } from "./Customer.entity";
+import { UUID } from 'crypto';
 
 @Entity({ name: "pharmacies" })
 export class Pharmacy {
@@ -50,8 +51,8 @@ export class Pharmacy {
   @Column({ nullable: false, default: "" })
   doctorPhone: string;
 
-  @Column({ nullable: false, default: "" })
-  user_id: string;
+  @Column({type: "uuid", nullable: true, default:null})
+  userId: UUID;
 
   @Column({ 
     type: "enum",
