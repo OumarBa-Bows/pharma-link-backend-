@@ -19,7 +19,6 @@ export const createUserValidator = [
 export const updateUserValidator = [
   body("name").optional().notEmpty().withMessage("User name is required."),
   body("email").optional().isEmail().withMessage("Valid email is required."),
-  body("password").optional().notEmpty().withMessage("Password is required."),
   validate,
 ];
 
