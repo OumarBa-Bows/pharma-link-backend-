@@ -52,11 +52,16 @@ export class UserService {
         throw new Error("Utilisateur introuvable");
       }
 
-      const { roles, ...rest } = data;
-      Object.assign(existing, rest);
-      const roleRepo = getRoleRepository();
+      const { roles, password, ...rest } = data;
 
-      if (roles) {
+      // Empêcher la mise à jour du mot de passe via cette méthode
+      // (utiliser updatePassword ou resetPassword à la place)
+
+      Object.assign(existing, rest);
+
+      // Si des rôles sont passés, les mettre à jour
+      if (roles !== undefined) {
+        const roleRepo = getRoleRepository();
         const foundRoles =
           roles.length > 0
             ? await roleRepo.find({ where: { name: In(roles) } })
@@ -65,7 +70,10 @@ export class UserService {
       }
 
       const saved = await userRepo.save(existing);
-      return saved;
+
+      // Exclure le mot de passe du retour
+      const { password: _, ...safeUser } = saved;
+      return safeUser;
     } catch (error) {
       return Promise.reject(error);
     }
@@ -177,20 +185,26 @@ export class UserService {
     }
   }
 
-  static async resetPassword(id: number, currentPassword: string, newPassword: string) {
+  static async resetPassword(
+    id: number,
+    currentPassword: string,
+    newPassword: string
+  ) {
     try {
-
       const userRepo = getUserRepository();
       const user = await userRepo.findOne({
         where: { id },
-        select: {id: true, password: true },
+        select: { id: true, password: true },
       });
 
       if (!user) {
         throw new Error("Utilisateur introuvable");
-      }      
-      
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
       if (!isPasswordValid) {
         throw new Error("Mot de passe invalide");
       }
