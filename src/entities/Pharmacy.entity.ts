@@ -4,7 +4,6 @@ import { User } from './User.entity';
 import { Zone } from './Zone.entity';
 
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
-import { Customer } from "./Customer.entity";
 import { UUID } from 'crypto';
 
 @Entity({ name: "pharmacies" })

@@ -57,7 +57,7 @@ export class PharmacyService {
         try {
             const pharmacyRepo = getPharmacyRepository();
             const pharmacies = await pharmacyRepo.find({
-                relations: ["customer", "zone"],
+                relations: ["zone"],
             });
             return pharmacies;
         } catch (error) {
@@ -70,7 +70,7 @@ export class PharmacyService {
             const pharmacyRepo = getPharmacyRepository();
             const pharmacy = await pharmacyRepo.findOne({
                 where: { id },
-                relations: ["customer", "zone"],
+                relations: ["zone"],
             });
             return pharmacy;
         } catch (error) {
