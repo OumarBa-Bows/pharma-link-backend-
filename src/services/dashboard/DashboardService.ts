@@ -14,7 +14,6 @@ export interface DashboardOrderItem {
   id: number;
   code: string;
   pharmacy: string;
-  distributor?: string;
   status: string;
   date: string;
 }
@@ -60,7 +59,7 @@ export class DashboardService {
     }));
 
     const recentOrdersRaw = await commandRepo.find({
-      relations: ["pharmacy", "distributor"],
+      relations: ["pharmacy"],
       order: { date: "DESC" },
       take: 5,
     });
