@@ -66,7 +66,7 @@ export class CommandService {
     try {
       const command = await commandRepository.findOne({
         where: { id: data.id },
-        relations: ["details"],
+        relations: ["pharmacy", "details"],
       });
 
       return command;
@@ -78,10 +78,13 @@ export class CommandService {
   static async getAllCommands() {
     try {
       const commands = await commandRepository.find({
-        relations: ["details"],
+        relations: ["pharmacy", "details"],
       });
 
-      return commands;
+      return commands.map((a) => ({
+        ...a,
+        pharmacy: `${a.pharmacy?.name} (${a.pharmacy?.phone})`,
+      }));
     } catch (error) {
       return Promise.reject(error);
     }
