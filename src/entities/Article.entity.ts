@@ -44,7 +44,8 @@ export class Article {
   @Column({ type: "date", nullable: true })
   expiryDate?: Date;
 
-  
+  @Column({ default: true })
+  isPublished?: boolean;
 
   @Column({ nullable: true })
   barcode?: string;
