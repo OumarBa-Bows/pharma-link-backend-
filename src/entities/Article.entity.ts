@@ -21,20 +21,22 @@ export class Article {
 
   @Column()
   name: string;
-  
-  @Column( { nullable: true })
-  categoryId : number;
 
-  @ManyToOne(() => Category, (category) => category.articles, { nullable: true })
+  @Column({ nullable: true })
+  categoryId: number;
+
+  @ManyToOne(() => Category, (category) => category.articles, {
+    nullable: true,
+  })
   @JoinColumn({ name: "categoryId" })
   category: Category;
 
   @Column("float")
   price: number;
 
-  @Column("int", {default: 0})
+  @Column("int", { default: 0 })
   availableQuantity: number;
-  
+
   @Column({ nullable: true })
   imageLink?: string;
 
@@ -54,10 +56,8 @@ export class Article {
   createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date; 
+  updatedAt: Date;
 
   @OneToMany(() => ListingDetail, (ld) => ld.article)
   listingDetails: ListingDetail[];
-
- 
 }

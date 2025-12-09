@@ -86,23 +86,22 @@ export class ArticleService {
   }
 
   // Récupérer tous les articles
- static async getAllArticles() {
-  try {
-    const articleRepo = getArticleRepository();
-    const articles = await articleRepo.find({
-      order: { createdAt: "DESC" } ,
-      relations: { category: true },
-    });
+  static async getAllArticles() {
+    try {
+      const articleRepo = getArticleRepository();
+      const articles = await articleRepo.find({
+        order: { createdAt: "DESC" },
+        relations: { category: true },
+      });
 
-    return articles.map(a => ({
-      ...a,
-      category: a.category?.name ?? null  // on remplace l'objet par son nom
-    }));
-  } catch (error) {
-    return Promise.reject(error);
+      return articles.map((a) => ({
+        ...a,
+        category: a.category?.name ?? null, // on remplace l'objet par son nom
+      }));
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
-}
-
 
   // Récupérer les articles paginés
   static async getArticlesPaginated(page: number = 1, limit: number = 10) {
@@ -132,7 +131,30 @@ export class ArticleService {
   static async getArticleById(id: string) {
     try {
       const articleRepo = getArticleRepository();
-      return await articleRepo.findOne({ where :{id}, relations: { category: true }});
+      return await articleRepo.findOne({
+        where: { id },
+        relations: { category: true },
+      });
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  // Modifier le statut de publication d'un article
+  static async togglePublishStatus(id: string) {
+    try {
+      const articleRepo = getArticleRepository();
+      const existing = await articleRepo.findOne({
+        where: { id },
+        relations: { category: true },
+      });
+      if (!existing) {
+        throw new Error("Article introuvable");
+      }
+
+      existing.isPublished = !existing.isPublished;
+      const updated = await articleRepo.save(existing);
+      return updated;
     } catch (error) {
       return Promise.reject(error);
     }
@@ -232,9 +254,7 @@ export class ArticleService {
    * @param file - Fichier Excel (ex: req.files.file) dont le buffer est accessible via file.data
    * @returns { created, updated, errors, items }
    */
-  static async importArticlesFromExcel(
-    file: any
-  ): Promise<{
+  static async importArticlesFromExcel(file: any): Promise<{
     created: number;
     updated: number;
     errors: string[];
@@ -364,14 +384,19 @@ export class ArticleService {
     }
   }
 
-  static async getCategories(){
+  static async getCategories() {
     try {
       const categoryRepo = getCategoryRepository();
       const categories = await categoryRepo.find();
       return categories;
     } catch (error: any) {
-      console.error("Erreur lors de la récupération des catégories:", error.message);
-      throw new Error("Échec de la récupération des catégories: " + error.message);
+      console.error(
+        "Erreur lors de la récupération des catégories:",
+        error.message
+      );
+      throw new Error(
+        "Échec de la récupération des catégories: " + error.message
+      );
     }
   }
 }

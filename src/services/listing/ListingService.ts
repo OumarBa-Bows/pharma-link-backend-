@@ -48,7 +48,7 @@ export class ListingService {
       const listing = listingRepository.create({
         name,
         description,
-        end_date : end_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        end_date: end_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         listingDetails,
       });
 
@@ -148,9 +148,7 @@ export class ListingService {
 
         // Crée les nouveaux
         listing.listingDetails = data.articleIds.map((a) => {
-          const article = articleEntities.find(
-            (art) => art.id === a
-          )!;
+          const article = articleEntities.find((art) => art.id === a)!;
           const detail = new ListingDetail();
           detail.article = article;
           detail.articleId = article.id;
@@ -181,6 +179,30 @@ export class ListingService {
       if (!listing) throw new Error("Listing introuvable");
       await listingRepository.remove(listing);
       return true;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  // Récupérer les articles d'un listing avec leurs détails
+  static async showItems(listingId: string) {
+    try {
+      const listing = await listingRepository.findOne({
+        where: { id: listingId },
+        relations: ["listingDetails", "listingDetails.article"],
+      });
+
+      if (!listing) {
+        throw new Error("Listing introuvable");
+      }
+
+      return listing.listingDetails.map((ld) => ({
+        id: ld.article.id,
+        name: ld.article.name,
+        reference: ld.article.reference,
+        price: ld.article.price,
+        availableQuantity: ld.article.availableQuantity,
+      }));
     } catch (error) {
       return Promise.reject(error);
     }
@@ -278,12 +300,15 @@ export class ListingService {
     const now = new Date();
     const formatted =
       "Liste des articles pour le " +
-      now.getDate().toString().padStart(2, '0') + "/" +
-      (now.getMonth() + 1).toString().padStart(2, '0') + "/" +
+      now.getDate().toString().padStart(2, "0") +
+      "/" +
+      (now.getMonth() + 1).toString().padStart(2, "0") +
+      "/" +
       now.getFullYear() +
       " à " +
-      now.getHours().toString().padStart(2, '0') + ":" +
-      now.getMinutes().toString().padStart(2, '0');
+      now.getHours().toString().padStart(2, "0") +
+      ":" +
+      now.getMinutes().toString().padStart(2, "0");
     return formatted;
   }
 }

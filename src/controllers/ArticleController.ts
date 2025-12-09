@@ -5,7 +5,6 @@ export class ArticleController {
   // Créer un article
   static create = async (req: Request, res: Response) => {
     try {
-     
       const image = req.files?.image;
       const article = await ArticleService.createArticle(req.body, image);
       return res.status(200).send({
@@ -27,7 +26,7 @@ export class ArticleController {
     try {
       const { id } = req.params;
       const image = req.files?.image;
-      const article = await ArticleService.updateArticle(id, req.body,image);
+      const article = await ArticleService.updateArticle(id, req.body, image);
       return res.status(200).send({
         success: true,
         message: "Article updated successfully",
@@ -133,7 +132,7 @@ export class ArticleController {
       const result = await ArticleService.importArticlesFromExcel(file);
       const { created, updated, errors, items } = result;
 
-      if ((created + updated) === 0 && errors.length > 0) {
+      if (created + updated === 0 && errors.length > 0) {
         return res.status(400).send({
           success: false,
           message: "Aucun article importé. Des erreurs sont survenues.",
@@ -164,7 +163,7 @@ export class ArticleController {
     }
   };
 
-  static getCategories = async(req: Request, res: Response) =>{
+  static getCategories = async (req: Request, res: Response) => {
     try {
       const categories = await ArticleService.getCategories();
       return res.status(200).send({
@@ -179,5 +178,23 @@ export class ArticleController {
         message: error.message || "Error getting categories",
       });
     }
-  }
+  };
+
+  static togglePublishStatus = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const article = await ArticleService.togglePublishStatus(id);
+      return res.status(200).send({
+        success: true,
+        message: "Article publish status toggled successfully",
+        data: { article },
+      });
+    } catch (error: any) {
+      console.error("Error toggling publish status: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error toggling publish status",
+      });
+    }
+  };
 }

@@ -112,4 +112,22 @@ export class ListingController {
       });
     }
   };
+
+  static getDetailsByListingId = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const listingDetails = await ListingService.showItems(id);
+      return res.status(200).send({
+        success: true,
+        message: "Listing details retrieved successfully",
+        data: { listingDetails },
+      });
+    } catch (error: any) {
+      console.error("Error getting listing details: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting listing details",
+      });
+    }
+  };
 }

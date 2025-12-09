@@ -1,14 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
-import { PharmacyState } from '../enums/PharmacyState.enum';
-import { User } from './User.entity';
-import { Zone } from './Zone.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+} from "typeorm";
+import { PharmacyState } from "../enums/PharmacyState.enum";
+import { User } from "./User.entity";
+import { Zone } from "./Zone.entity";
 
 import { PharmacyCustomerType } from "../enums/PharmacyCustomerType";
-import { UUID } from 'crypto';
+import { UUID } from "crypto";
 
 @Entity({ name: "pharmacies" })
 export class Pharmacy {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -20,12 +29,12 @@ export class Pharmacy {
   @Column({ unique: true })
   code: string;
   @ManyToOne(() => Zone, { nullable: true })
-  @JoinColumn({ name: 'zoneId' })
+  @JoinColumn({ name: "zoneId" })
   zone: Zone;
 
   @Column({ nullable: true })
   email: string;
-  @Column({ type: 'enum', enum: PharmacyState, default: PharmacyState.PENDING })
+  @Column({ type: "enum", enum: PharmacyState, default: PharmacyState.PENDING })
   state: PharmacyState;
 
   @CreateDateColumn({ type: "timestamp" })
@@ -33,26 +42,26 @@ export class Pharmacy {
 
   @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
-  
+
   @Column({ nullable: true })
   doctorName: string;
 
   @Column({ nullable: true })
   managerName: string;
 
-  @Column({  nullable: false, default: "" })
+  @Column({ nullable: false, default: "" })
   managerPhone: string;
 
   @Column({ nullable: false, default: "" })
   doctorPhone: string;
 
-  @Column({type: "uuid", nullable: true, default:null})
+  @Column({ type: "uuid", nullable: true, default: null })
   userId: UUID;
 
-  @Column({ 
+  @Column({
     type: "enum",
     enum: PharmacyCustomerType,
-    default: PharmacyCustomerType.PHARMACY,
+    default: PharmacyCustomerType.DEPOT_PHARMACEUTIQUE,
   })
   customerType: PharmacyCustomerType;
 
@@ -61,13 +70,13 @@ export class Pharmacy {
 
   @Column({ nullable: true })
   zoneId: string;
-  
+
   @Column({ nullable: true })
   phone: string;
-  
+
   @Column({ nullable: true })
   zipCode: string;
-  
+
   @Column({ nullable: true })
   city: string;
 }

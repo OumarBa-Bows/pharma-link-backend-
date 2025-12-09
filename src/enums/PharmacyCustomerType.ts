@@ -1,5 +1,9 @@
 export enum PharmacyCustomerType {
+  DEPOT_PHARMACEUTIQUE = "DEPOT_PHARMACEUTIQUE",
+  CLINIQUE = "CLINIQUE",
+  CENTRE_HOSPITALIER = "CENTRE_HOSPITALIER",
+  POINT_DE_SANTE = "POINT_DE_SANTE",
+  HOPITAL = "HOPITAL",
   PHARMACY = "PHARMACY",
-  DEPOT = "DEPOT",
   // autres types si définis...
 }

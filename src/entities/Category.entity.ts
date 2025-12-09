@@ -17,8 +17,11 @@ export class Category {
   @Column({ nullable: true })
   name: string;
 
-@Column({ nullable: true })
+  @Column({ nullable: true })
   nameAr: string;
+
+  @Column({ type: "text", nullable: true })
+  imageUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -27,7 +30,5 @@ export class Category {
   updatedAt: Date;
 
   @OneToMany(() => Article, (article) => article.category)
-articles: Article[];
-
-
+  articles: Article[];
 }

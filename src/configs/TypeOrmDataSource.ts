@@ -11,7 +11,7 @@ export const AppDataSourceConfig: DataSourceOptions = {
   username: process.env.SUPABASE_USER,
   password: process.env.SUPABASE_PASS,
   database: process.env.SUPABASE_DBNAME,
-  synchronize: false,
+  synchronize: true,
   logging: false,
   poolSize: 50,
   extra: {

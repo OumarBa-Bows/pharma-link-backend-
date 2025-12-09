@@ -84,6 +84,7 @@ export class CommandService {
       return commands.map((a) => ({
         ...a,
         pharmacy: `${a.pharmacy?.name} (${a.pharmacy?.phone})`,
+        pharmacyCode: a.pharmacy?.code,
       }));
     } catch (error) {
       return Promise.reject(error);
@@ -180,6 +181,134 @@ export class CommandService {
       currentCommand.status = data.status ?? currentCommand.status;
       await commandRepo.save(currentCommand);
       return currentCommand;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateArticleQuantity(
+    queryRunner: QueryRunner,
+    data: {
+      commandId: number;
+      articleId: string;
+      quantity: number;
+    }
+  ) {
+    try {
+      if (data.quantity < 0) {
+        throw new Error("La quantité doit être supérieure ou égale à 0");
+      }
+
+      const commandDetailsRepo =
+        queryRunner.manager.getRepository(CommandDetails);
+      const commandRepo = queryRunner.manager.getRepository(Command);
+      const articleRepo = queryRunner.manager.getRepository(Article);
+
+      const commandDetail = await commandDetailsRepo.findOne({
+        where: {
+          command_id: data.commandId,
+          article_id: data.articleId,
+        },
+      });
+
+      if (!commandDetail) {
+        throw new Error("Article non trouvé dans cette commande");
+      }
+
+      const article = await articleRepo.findOne({
+        where: { id: data.articleId },
+      });
+
+      if (!article) {
+        throw new Error("Article introuvable");
+      }
+
+      // Mettre à jour la quantité
+      commandDetail.quantity = data.quantity;
+      await commandDetailsRepo.save(commandDetail);
+
+      // Recalculer le prix total de la commande
+      const allDetails = await commandDetailsRepo.find({
+        where: { command_id: data.commandId },
+      });
+
+      let newTotalPrice = 0;
+      for (const detail of allDetails) {
+        const art = await articleRepo.findOne({
+          where: { id: detail.article_id },
+        });
+        if (art) {
+          newTotalPrice += detail.quantity * art.price;
+        }
+      }
+
+      const command = await commandRepo.findOne({
+        where: { id: data.commandId },
+      });
+
+      if (command) {
+        command.totalprice = newTotalPrice;
+        await commandRepo.save(command);
+      }
+
+      return commandDetail;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async removeArticleFromCommand(
+    queryRunner: QueryRunner,
+    data: {
+      commandId: number;
+      articleId: string;
+    }
+  ) {
+    try {
+      const commandDetailsRepo =
+        queryRunner.manager.getRepository(CommandDetails);
+      const commandRepo = queryRunner.manager.getRepository(Command);
+      const articleRepo = queryRunner.manager.getRepository(Article);
+
+      const commandDetail = await commandDetailsRepo.findOne({
+        where: {
+          command_id: data.commandId,
+          article_id: data.articleId,
+        },
+      });
+
+      if (!commandDetail) {
+        throw new Error("Article non trouvé dans cette commande");
+      }
+
+      // Supprimer l'article de la commande
+      await commandDetailsRepo.remove(commandDetail);
+
+      // Recalculer le prix total de la commande
+      const allDetails = await commandDetailsRepo.find({
+        where: { command_id: data.commandId },
+      });
+
+      let newTotalPrice = 0;
+      for (const detail of allDetails) {
+        const art = await articleRepo.findOne({
+          where: { id: detail.article_id },
+        });
+        if (art) {
+          newTotalPrice += detail.quantity * art.price;
+        }
+      }
+
+      const command = await commandRepo.findOne({
+        where: { id: data.commandId },
+      });
+
+      if (command) {
+        command.totalprice = newTotalPrice;
+        await commandRepo.save(command);
+      }
+
+      return { success: true, message: "Article supprimé de la commande" };
     } catch (error) {
       throw error;
     }
