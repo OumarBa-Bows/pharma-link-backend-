@@ -3,7 +3,6 @@ import { PharmacyController } from "../controllers/PharmacyController";
 
 const router = Router();
 
-
 // Get all pharmacies
 router.get("/", PharmacyController.getAllPharmacies);
 
@@ -15,9 +14,6 @@ router.post("/", PharmacyController.create);
 
 // Get paginated list of pharmacies
 router.get("/", PharmacyController.getPaginated);
-
-// Get a single pharmacy by ID
-router.get("/:id", PharmacyController.getById);
 
 // Update a pharmacy
 router.put("/:id", PharmacyController.update);
