@@ -299,6 +299,7 @@ export class ArticleService {
             .toString()
             .trim();
           const name = (r.name ?? r.Name ?? r.Nom ?? "").toString().trim();
+          const stock = (r.stock ?? r.Stock ?? r.Stock ?? "").toString().trim();
           const priceRaw = r.price ?? r.Price ?? r.prix ?? r.Prix;
           const description = r.description ?? r.Description ?? undefined;
           const expiryRaw =
@@ -333,10 +334,11 @@ export class ArticleService {
           if (existing) {
             existing.name = name;
             existing.price = price;
-            existing.description = description ?? existing.description;
-            existing.expiryDate = expiryDate ?? existing.expiryDate;
-            existing.barcode = barcode ?? existing.barcode;
-            if (imageLink) existing.imageLink = imageLink;
+            existing.availableQuantity = parseInt(stock, 10) || 0;
+            existing.description = description;
+            existing.expiryDate = expiryDate;
+            existing.barcode = barcode;
+            existing.imageLink = imageLink;
             await articleRepo.save(existing);
             updated += 1;
             items.push({
@@ -344,6 +346,7 @@ export class ArticleService {
               reference: existing.reference,
               name: existing.name,
               price: existing.price,
+              availableQuantity: existing.availableQuantity,
               description: existing.description,
               expiryDate: existing.expiryDate,
               barcode: existing.barcode,
@@ -354,6 +357,7 @@ export class ArticleService {
               reference,
               name,
               price,
+              availableQuantity: parseInt(stock, 10) || 0,
               description,
               expiryDate,
               barcode,
@@ -366,6 +370,7 @@ export class ArticleService {
               reference: createdEntity.reference,
               name: createdEntity.name,
               price: createdEntity.price,
+              availableQuantity: createdEntity.availableQuantity,
               description: createdEntity.description,
               expiryDate: createdEntity.expiryDate,
               barcode: createdEntity.barcode,

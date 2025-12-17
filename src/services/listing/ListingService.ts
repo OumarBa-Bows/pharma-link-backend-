@@ -45,6 +45,12 @@ export class ListingService {
         return detail;
       });
 
+      // Mettre isPublished à true pour tous les articles du listing
+      for (const article of articleEntities) {
+        article.isPublished = true;
+      }
+      await articleRepository.save(articleEntities);
+
       const listing = listingRepository.create({
         name,
         description,
@@ -273,6 +279,12 @@ export class ListingService {
         detail.status = "active";
         return detail;
       });
+
+      // Mettre isPublished à true pour tous les articles du listing
+      for (const article of articleEntities) {
+        article.isPublished = true;
+      }
+      await articleRepository.save(articleEntities);
 
       const listing = listingRepository.create({
         name: this.generateListingDescription(),
