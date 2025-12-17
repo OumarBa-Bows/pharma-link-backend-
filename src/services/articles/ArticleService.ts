@@ -295,6 +295,8 @@ export class ArticleService {
         const r = rows[i];
         const lineNo = i + 2; // header on line 1
         try {
+          console.log("Line", lineNo);
+          console.log("Importing row:", r);
           const reference = (r.reference ?? r.Reference ?? r.REFERENCE ?? "")
             .toString()
             .trim();
@@ -334,11 +336,15 @@ export class ArticleService {
           if (existing) {
             existing.name = name;
             existing.price = price;
-            existing.availableQuantity = parseInt(stock, 10) || 0;
-            existing.description = description;
-            existing.expiryDate = expiryDate;
-            existing.barcode = barcode;
-            existing.imageLink = imageLink;
+            if (stock) existing.availableQuantity = parseInt(stock, 10) || 0;
+            if (description !== undefined && description !== null)
+              existing.description = description;
+            if (expiryDate !== undefined && expiryDate !== null)
+              existing.expiryDate = expiryDate;
+            if (barcode !== undefined && barcode !== null)
+              existing.barcode = barcode;
+            if (imageLink !== undefined && imageLink !== null)
+              existing.imageLink = imageLink;
             await articleRepo.save(existing);
             updated += 1;
             items.push({
