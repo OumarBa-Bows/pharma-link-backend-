@@ -295,9 +295,6 @@ export class ArticleService {
         const r = rows[i];
         const lineNo = i + 2; // header on line 1
         try {
-          console.log("Line", lineNo);
-          console.log("Importing row:", r);
-
           // Normaliser les clés: enlever les espaces et mettre en minuscules
           const normalized: any = {};
           for (const key of Object.keys(r)) {
