@@ -214,7 +214,12 @@ export class ListingService {
     }
   }
 
-  static async importListing(file: any) {
+  static async importListing(
+    file: any,
+    listingName?: string,
+    listingDescription?: string,
+    endDate?: Date
+  ) {
     try {
       if (!file || !file.data) {
         throw new Error("Fichier invalide ou manquant");
@@ -287,9 +292,9 @@ export class ListingService {
       await articleRepository.save(articleEntities);
 
       const listing = listingRepository.create({
-        name: this.generateListingDescription(),
-        description: this.generateListingDescription(),
-        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        name: listingName ?? this.generateListingDescription(),
+        description: listingDescription ?? this.generateListingDescription(),
+        end_date: endDate ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         listingDetails,
       });
 

@@ -98,7 +98,13 @@ export class ListingController {
           message: "Le fichier Excel est requis (champ 'file').",
         });
       }
-      const listing = await ListingService.importListing(file);
+      const { title, description, end_date } = req.body;
+      const listing = await ListingService.importListing(
+        file,
+        title,
+        description,
+        end_date
+      );
       return res.status(200).send({
         success: true,
         message: "Listing imported successfully",
