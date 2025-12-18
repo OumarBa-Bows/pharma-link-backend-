@@ -297,24 +297,35 @@ export class ArticleService {
         try {
           console.log("Line", lineNo);
           console.log("Importing row:", r);
-          const reference = (r.reference ?? r.Reference ?? r.REFERENCE ?? "")
+
+          // Normaliser les clés: enlever les espaces et mettre en minuscules
+          const normalized: any = {};
+          for (const key of Object.keys(r)) {
+            const normalizedKey = key.replace(/\s+/g, "").toLowerCase();
+            normalized[normalizedKey] = r[key];
+          }
+
+          const reference = (normalized.reference ?? normalized.référence ?? "")
             .toString()
             .trim();
-          const name = (r.name ?? r.Name ?? r.Nom ?? "").toString().trim();
-          const stock = (r.stock ?? r.Stock ?? r.Stock ?? "").toString().trim();
-          const priceRaw = r.price ?? r.Price ?? r.prix ?? r.Prix;
-          const description = r.description ?? r.Description ?? undefined;
+          const name = (
+            normalized.name ??
+            normalized.nom ??
+            normalized.désignation ??
+            normalized.designation ??
+            ""
+          )
+            .toString()
+            .trim();
+          const stock = (normalized.stock ?? "").toString().trim();
+          const priceRaw = normalized.price ?? normalized.prix;
+          const description = normalized.description ?? undefined;
           const expiryRaw =
-            r.expiryDate ??
-            r.ExpiryDate ??
-            r.expiry ??
-            r.Expiry ??
-            r.dateExp ??
-            r.DateExp;
+            normalized.expirydate ?? normalized.expiry ?? normalized.dateexp;
           const barcode =
-            r.barcode ?? r.Barcode ?? r.codeBarre ?? r.CodeBarre ?? undefined;
+            normalized.barcode ?? normalized.codebarre ?? undefined;
           const imageLink =
-            r.imageLink ?? r.ImageLink ?? r.image ?? r.Image ?? undefined;
+            normalized.imagelink ?? normalized.image ?? undefined;
 
           if (!reference) throw new Error("reference manquant");
           if (!name) throw new Error("name manquant");

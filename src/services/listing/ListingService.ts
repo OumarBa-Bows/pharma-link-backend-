@@ -237,7 +237,7 @@ export class ListingService {
         const keys = Object.keys(r || {});
         const key = keys.find((k) => {
           const kk = String(k).toLowerCase().trim();
-          return kk === "reference" || kk === "ref";
+          return kk === "reference" || kk === "ref" || kk === "référence";
         });
         const val = key ? r[key] : null;
         if (val === null || val === undefined) return "";
