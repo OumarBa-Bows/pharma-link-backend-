@@ -7,24 +7,35 @@ import {
   uploadExcelValidator,
 } from "../middlewares/article.middleware";
 
-const articeRoute = Router();
-articeRoute.post(
+const articleRoute = Router();
+articleRoute.post(
   "/",
   createArticleValidator,
   imageValidator,
   ArticleController.create
 );
-articeRoute.post(
+articleRoute.post(
   "/update/:id",
   updateArticleValidator,
   imageValidator,
   ArticleController.update
 );
-articeRoute.get("/", ArticleController.getAll);
-articeRoute.get("/paginated/limit", ArticleController.getPerPage);
-articeRoute.get("/:id", ArticleController.getById);
-articeRoute.get("/delete/:id", ArticleController.delete);
-articeRoute.post("/upload", uploadExcelValidator, ArticleController.upload);
-articeRoute.get("/categories/get", ArticleController.getCategories);
-articeRoute.get("/set/publish/:id", ArticleController.togglePublishStatus);
-export default articeRoute;
+articleRoute.get("/", ArticleController.getAll);
+articleRoute.get("/paginated/limit", ArticleController.getPerPage);
+articleRoute.get("/:id", ArticleController.getById);
+articleRoute.get("/delete/:id", ArticleController.delete);
+articleRoute.post("/upload", uploadExcelValidator, ArticleController.upload);
+articleRoute.get("/categories/get", ArticleController.getCategories);
+articleRoute.get("/set/publish/:id", ArticleController.togglePublishStatus);
+articleRoute.post("/add/remise/:id", ArticleController.addRemiseToArticle);
+articleRoute.put(
+  "/update/remise/:id/:remiseId",
+  ArticleController.updateRemiseInArticle
+);
+articleRoute.delete(
+  "/remove/remise/:id/:remiseId",
+  ArticleController.removeRemiseFromArticle
+);
+
+articleRoute.get("/remises/get/:id", ArticleController.getArticleRemises);
+export default articleRoute;

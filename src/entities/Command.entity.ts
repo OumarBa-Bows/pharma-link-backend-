@@ -1,23 +1,33 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, CreateDateColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  CreateDateColumn,
+} from "typeorm";
 import { Distributor } from "./Distributor.entity";
 import { CommandDetails } from "./CommandDetails.entity";
 import { Pharmacy } from "./Pharmacy.entity";
 import { COMMAND_STATUS } from "../enums/CommandStatus";
 
-
-@Entity({name:"command"})
+@Entity({ name: "command" })
 export class Command {
   @PrimaryGeneratedColumn("increment")
   id: number;
 
-
   @Column()
   code: string;
 
-  @Column({type:"enum", enum:COMMAND_STATUS, default:COMMAND_STATUS.pending})
-  status: COMMAND_STATUS|COMMAND_STATUS.pending;
+  @Column({
+    type: "enum",
+    enum: COMMAND_STATUS,
+    default: COMMAND_STATUS.pending,
+  })
+  status: COMMAND_STATUS | COMMAND_STATUS.pending;
 
-  @Column({ type: "boolean", default: false }) 
+  @Column({ type: "boolean", default: false })
   viewed: boolean;
 
   @Column({ nullable: true })
@@ -35,11 +45,10 @@ export class Command {
   @Column()
   pharmacyId: string;
 
-
   @ManyToOne(() => Pharmacy)
   @JoinColumn({ name: "pharmacyId" })
   pharmacy: Pharmacy;
 
-  @OneToMany(() => CommandDetails, detail => detail.command)
+  @OneToMany(() => CommandDetails, (detail) => detail.command)
   details: CommandDetails[];
 }

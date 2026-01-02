@@ -134,4 +134,23 @@ export class PharmacyController {
       });
     }
   };
+
+  // Get command count by status for a pharmacy
+  static getCommandCountByStatus = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const commandCount = await PharmacyService.getPharmacyCommandCount(id);
+      return res.status(200).send({
+        success: true,
+        message: "Command count retrieved successfully",
+        data: { commandCount },
+      });
+    } catch (error: any) {
+      logger.error("Error getting command count: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting command count",
+      });
+    }
+  };
 }

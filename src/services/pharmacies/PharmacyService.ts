@@ -1,8 +1,10 @@
 import { Like, FindOptionsWhere } from "typeorm";
 import { getPharmacyRepository } from "../../repository/pharmacyRepository";
+import { getCommandRepository } from "../../repository/commandRepository";
 import { logger } from "../../app";
 import { Pharmacy } from "../../entities/Pharmacy.entity";
 import { PharmacyState } from "../../enums/PharmacyState.enum";
+import { COMMAND_STATUS } from "../../enums/CommandStatus";
 import { supabase } from "../../app";
 
 export interface PaginatedResult<T> {
@@ -11,6 +13,15 @@ export interface PaginatedResult<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface CommandCountByStatus {
+  total: number;
+  validated: number;
+  pending: number;
+  shipped: number;
+  delivered: number;
+  cancelled: number;
 }
 
 export class PharmacyService {
@@ -205,6 +216,53 @@ export class PharmacyService {
       return await this.getPharmacyById(id);
     } catch (error) {
       logger.error("Error in updatePharmacyState: ", error);
+      return Promise.reject(error);
+    }
+  }
+
+  // Get the number of commands for a pharmacy
+  static async getPharmacyCommandCount(
+    pharmacyId: string
+  ): Promise<CommandCountByStatus> {
+    try {
+      const commandRepository = getCommandRepository();
+
+      // Get total count
+      const total = await commandRepository.count({
+        where: { pharmacyId },
+      });
+
+      // Get count for each status
+      const validated = await commandRepository.count({
+        where: { pharmacyId, status: COMMAND_STATUS.validated },
+      });
+
+      const pending = await commandRepository.count({
+        where: { pharmacyId, status: COMMAND_STATUS.pending },
+      });
+
+      const shipped = await commandRepository.count({
+        where: { pharmacyId, status: COMMAND_STATUS.shipped },
+      });
+
+      const delivered = await commandRepository.count({
+        where: { pharmacyId, status: COMMAND_STATUS.delivered },
+      });
+
+      const cancelled = await commandRepository.count({
+        where: { pharmacyId, status: COMMAND_STATUS.cancelled },
+      });
+
+      return {
+        total,
+        validated,
+        pending,
+        shipped,
+        delivered,
+        cancelled,
+      };
+    } catch (error) {
+      logger.error("Error in getPharmacyCommandCount: ", error);
       return Promise.reject(error);
     }
   }

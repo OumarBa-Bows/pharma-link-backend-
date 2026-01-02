@@ -52,6 +52,9 @@ export class Article {
   @Column({ nullable: true })
   barcode?: string;
 
+  @Column({ type: "jsonb", nullable: true })
+  remise?: { id: string; min: number; max: number; percent: number }[];
+
   @CreateDateColumn()
   createdAt: Date;
 

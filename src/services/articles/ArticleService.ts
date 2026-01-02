@@ -418,4 +418,137 @@ export class ArticleService {
       );
     }
   }
+
+  // Ajouter une remise à un article
+  static async addRemiseToArticle(
+    articleId: string,
+    remise: { min: number; max: number; percent: number }
+  ) {
+    try {
+      const articleRepo = getArticleRepository();
+      const article = await articleRepo.findOne({ where: { id: articleId } });
+
+      if (!article) {
+        throw new Error("Article introuvable");
+      }
+
+      // Initialiser le tableau de remises s'il n'existe pas
+      const currentRemises = article.remise || [];
+
+      // Générer un ID unique pour la remise
+      const remiseId = `remise_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 11)}`;
+
+      // Ajouter la nouvelle remise avec l'ID généré
+      currentRemises.push({
+        id: remiseId,
+        ...remise,
+      });
+
+      // Sauvegarder les remises mises à jour
+      article.remise = currentRemises;
+      await articleRepo.save(article);
+
+      return article;
+    } catch (error: any) {
+      logger.error("Erreur lors de l'ajout de la remise:", error.message);
+      throw new Error("Échec de l'ajout de la remise: " + error.message);
+    }
+  }
+
+  // Modifier une remise d'un article
+  static async updateRemiseOfArticle(
+    articleId: string,
+    remiseId: string,
+    remiseData: { min: number; max: number; percent: number }
+  ) {
+    try {
+      const articleRepo = getArticleRepository();
+      const article = await articleRepo.findOne({ where: { id: articleId } });
+
+      if (!article) {
+        throw new Error("Article introuvable");
+      }
+
+      const currentRemises = article.remise || [];
+      const remiseIndex = currentRemises.findIndex((r) => r.id === remiseId);
+
+      if (remiseIndex === -1) {
+        throw new Error("Remise introuvable");
+      }
+
+      // Mettre à jour la remise
+      currentRemises[remiseIndex] = {
+        id: remiseId,
+        ...remiseData,
+      };
+
+      article.remise = currentRemises;
+      await articleRepo.save(article);
+
+      return article;
+    } catch (error: any) {
+      logger.error(
+        "Erreur lors de la modification de la remise:",
+        error.message
+      );
+      throw new Error(
+        "Échec de la modification de la remise: " + error.message
+      );
+    }
+  }
+
+  // Supprimer une remise d'un article
+  static async deleteRemiseFromArticle(articleId: string, remiseId: string) {
+    try {
+      const articleRepo = getArticleRepository();
+      const article = await articleRepo.findOne({ where: { id: articleId } });
+
+      if (!article) {
+        throw new Error("Article introuvable");
+      }
+
+      const currentRemises = article.remise || [];
+      const filteredRemises = currentRemises.filter((r) => r.id !== remiseId);
+
+      if (filteredRemises.length === currentRemises.length) {
+        throw new Error("Remise introuvable");
+      }
+
+      article.remise = filteredRemises;
+      await articleRepo.save(article);
+
+      return article;
+    } catch (error: any) {
+      logger.error(
+        "Erreur lors de la suppression de la remise:",
+        error.message
+      );
+      throw new Error("Échec de la suppression de la remise: " + error.message);
+    }
+  }
+
+  // Récupérer toutes les remises d'un article
+  static async getArticleRemises(articleId: string) {
+    try {
+      const articleRepo = getArticleRepository();
+      const article = await articleRepo.findOne({ where: { id: articleId } });
+
+      if (!article) {
+        throw new Error("Article introuvable");
+      }
+
+      return {
+        articleName: article.name,
+        remises: article.remise || [],
+      };
+    } catch (error: any) {
+      logger.error(
+        "Erreur lors de la récupération des remises:",
+        error.message
+      );
+      throw new Error("Échec de la récupération des remises: " + error.message);
+    }
+  }
 }

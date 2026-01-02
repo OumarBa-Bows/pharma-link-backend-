@@ -197,4 +197,85 @@ export class ArticleController {
       });
     }
   };
+
+  static addRemiseToArticle = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const remiseData = req.body;
+      const article = await ArticleService.addRemiseToArticle(id, remiseData);
+      return res.status(200).send({
+        success: true,
+        message: "Remise added to article successfully",
+        data: { article },
+      });
+    } catch (error: any) {
+      console.error("Error adding remise to article: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error adding remise to article",
+      });
+    }
+  };
+
+  static removeRemiseFromArticle = async (req: Request, res: Response) => {
+    try {
+      const { id, remiseId } = req.params;
+      const article = await ArticleService.deleteRemiseFromArticle(
+        id,
+        remiseId
+      );
+      return res.status(200).send({
+        success: true,
+        message: "Remise removed from article successfully",
+        data: { article },
+      });
+    } catch (error: any) {
+      console.error("Error removing remise from article: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error removing remise from article",
+      });
+    }
+  };
+
+  static updateRemiseInArticle = async (req: Request, res: Response) => {
+    try {
+      const { id, remiseId } = req.params;
+      const remiseData = req.body;
+      const article = await ArticleService.updateRemiseOfArticle(
+        id,
+        remiseId,
+        remiseData
+      );
+      return res.status(200).send({
+        success: true,
+        message: "Remise updated in article successfully",
+        data: { article },
+      });
+    } catch (error: any) {
+      console.error("Error updating remise in article: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error updating remise in article",
+      });
+    }
+  };
+
+  static getArticleRemises = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await ArticleService.getArticleRemises(id);
+      return res.status(200).send({
+        success: true,
+        message: "Article remises retrieved successfully",
+        data: { remises: result.remises, articleName: result.articleName },
+      });
+    } catch (error: any) {
+      console.error("Error getting article remises: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting article remises",
+      });
+    }
+  };
 }
