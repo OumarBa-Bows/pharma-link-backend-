@@ -41,7 +41,18 @@ export class CommandService {
               `One of articles is not found please verify agian article_id : ${article.article_id}`
             );
 
-          totalprice = totalprice + article.quantity * articleDetails.price;
+          let articleTotalPrice = article.quantity * articleDetails.price;
+          if (articleDetails.remise && articleDetails.remise.length > 0) {
+            const applicableRemise = articleDetails.remise.find(
+              (r) => article.quantity >= r.min && article.quantity <= r.max
+            );
+            if (applicableRemise) {
+              articleTotalPrice =
+                articleTotalPrice * (1 - applicableRemise.percent / 100);
+            }
+          }
+
+          totalprice = totalprice + articleTotalPrice;
 
           const detail = new CommandDetails();
           (detail.command_id = newCommand.id),
@@ -79,6 +90,9 @@ export class CommandService {
     try {
       const commands = await commandRepository.find({
         relations: ["pharmacy", "details"],
+        order: {
+          date: "DESC",
+        },
       });
 
       return commands.map((a) => ({
@@ -123,7 +137,18 @@ export class CommandService {
               `One of articles is not found please verify agian article_id : ${article.article_id}`
             );
 
-          totalprice = totalprice + article.quantity * articleDetails.price;
+          let articleTotalPrice = article.quantity * articleDetails.price;
+          if (articleDetails.remise && articleDetails.remise.length > 0) {
+            const applicableRemise = articleDetails.remise.find(
+              (r) => article.quantity >= r.min && article.quantity <= r.max
+            );
+            if (applicableRemise) {
+              articleTotalPrice =
+                articleTotalPrice * (1 - applicableRemise.percent / 100);
+            }
+          }
+
+          totalprice = totalprice + articleTotalPrice;
 
           const detail = await commandDetailsRepo.findOne({
             where: {
@@ -238,7 +263,17 @@ export class CommandService {
           where: { id: detail.article_id },
         });
         if (art) {
-          newTotalPrice += detail.quantity * art.price;
+          let articleTotalPrice = detail.quantity * art.price;
+          if (art.remise && art.remise.length > 0) {
+            const applicableRemise = art.remise.find(
+              (r) => detail.quantity >= r.min && detail.quantity <= r.max
+            );
+            if (applicableRemise) {
+              articleTotalPrice =
+                articleTotalPrice * (1 - applicableRemise.percent / 100);
+            }
+          }
+          newTotalPrice += articleTotalPrice;
         }
       }
 
@@ -295,7 +330,17 @@ export class CommandService {
           where: { id: detail.article_id },
         });
         if (art) {
-          newTotalPrice += detail.quantity * art.price;
+          let articleTotalPrice = detail.quantity * art.price;
+          if (art.remise && art.remise.length > 0) {
+            const applicableRemise = art.remise.find(
+              (r) => detail.quantity >= r.min && detail.quantity <= r.max
+            );
+            if (applicableRemise) {
+              articleTotalPrice =
+                articleTotalPrice * (1 - applicableRemise.percent / 100);
+            }
+          }
+          newTotalPrice += articleTotalPrice;
         }
       }
 
