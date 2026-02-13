@@ -96,7 +96,7 @@ app.use(
 );
 
 // Set the port for the server to listen on from environment or default to 3002
-const PORT = process.env.PORT || 6345;
+const PORT = process.env.PORT || 8088;
 
 // API routes prefix
 app.use("/api", mainRouter);
