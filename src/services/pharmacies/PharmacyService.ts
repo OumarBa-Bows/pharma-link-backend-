@@ -29,7 +29,7 @@ export class PharmacyService {
   static async getPaginatedPharmacies(
     page: number = 1,
     limit: number = 10,
-    search: string = ""
+    search: string = "",
   ): Promise<PaginatedResult<Pharmacy>> {
     try {
       const repository = getPharmacyRepository();
@@ -103,7 +103,7 @@ export class PharmacyService {
 
       if (existingPharmacy) {
         throw new Error(
-          "PhoneNumberAlreadyExists: Une pharmacie avec ce numéro de téléphone existe déjà."
+          "PhoneNumberAlreadyExists: Une pharmacie avec ce numéro de téléphone existe déjà.",
         );
       }
 
@@ -114,7 +114,7 @@ export class PharmacyService {
 
       if (existingCode) {
         throw new Error(
-          "CodeAlreadyExists: Une pharmacie avec ce code existe déjà."
+          "CodeAlreadyExists: Une pharmacie avec ce code existe déjà.",
         );
       }
 
@@ -158,7 +158,7 @@ export class PharmacyService {
         throw new Error(
           `Erreur d'authentification: ${
             authError?.message || "Aucun utilisateur créé"
-          }`
+          }`,
         );
       }
 
@@ -180,6 +180,41 @@ export class PharmacyService {
     }
   }
 
+  // Update pharmacy user password
+  static async updatePharmacyPassword(
+    id: string,
+    newPassword: string,
+  ): Promise<void> {
+    try {
+      const pharmacyRepo = getPharmacyRepository();
+      const pharmacy = await pharmacyRepo.findOne({ where: { id } });
+
+      if (!pharmacy) {
+        throw new Error("PharmacyNotFound: Pharmacie introuvable.");
+      }
+
+      if (!pharmacy.userId) {
+        throw new Error(
+          "NoUserLinked: Aucun utilisateur lié à cette pharmacie.",
+        );
+      }
+
+      const { error } = await supabase.auth.admin.updateUserById(
+        pharmacy.userId as string,
+        { password: newPassword },
+      );
+
+      if (error) {
+        throw new Error(
+          `Erreur lors de la mise à jour du mot de passe: ${error.message}`,
+        );
+      }
+    } catch (error) {
+      logger.error("Error in updatePharmacyPassword: ", error);
+      throw error;
+    }
+  }
+
   static async deletePharmacy(id: string) {
     try {
       const pharmacyRepo = getPharmacyRepository();
@@ -193,7 +228,7 @@ export class PharmacyService {
 
   static async updatePharmacy(
     id: string,
-    pharmacyData: Partial<Pharmacy>
+    pharmacyData: Partial<Pharmacy>,
   ): Promise<Pharmacy | null> {
     try {
       const repository = getPharmacyRepository();
@@ -208,7 +243,7 @@ export class PharmacyService {
   // Update pharmacy state
   static async updatePharmacyState(
     id: string,
-    state: PharmacyState
+    state: PharmacyState,
   ): Promise<Pharmacy | null> {
     try {
       const repository = getPharmacyRepository();
@@ -222,7 +257,7 @@ export class PharmacyService {
 
   // Get the number of commands for a pharmacy
   static async getPharmacyCommandCount(
-    pharmacyId: string
+    pharmacyId: string,
   ): Promise<CommandCountByStatus> {
     try {
       const commandRepository = getCommandRepository();

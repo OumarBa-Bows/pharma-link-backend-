@@ -30,7 +30,7 @@ export class PharmacyController {
       const result = await PharmacyService.getPaginatedPharmacies(
         page,
         limit,
-        search
+        search,
       );
 
       return res.status(200).send({
@@ -150,6 +150,24 @@ export class PharmacyController {
       return res.status(500).send({
         success: false,
         message: error.message || "Error getting command count",
+      });
+    }
+  };
+
+  static updatePharmacyPassword = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { newPassword } = req.body;
+      await PharmacyService.updatePharmacyPassword(id, newPassword);
+      return res.status(200).send({
+        success: true,
+        message: "Pharmacy password updated successfully",
+      });
+    } catch (error: any) {
+      logger.error("Error updating pharmacy password: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error updating pharmacy password",
       });
     }
   };

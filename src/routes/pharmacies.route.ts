@@ -24,4 +24,6 @@ router.delete("/:id", PharmacyController.delete);
 // Get command count by status for a pharmacy
 router.get("/:id/command-count", PharmacyController.getCommandCountByStatus);
 
+router.post("/:id/update-password", PharmacyController.updatePharmacyPassword);
+
 export default router;
