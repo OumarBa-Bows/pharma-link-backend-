@@ -1,12 +1,15 @@
-import { Like, FindOptionsWhere } from "typeorm";
-import { getPharmacyRepository } from "../../repository/pharmacyRepository";
+import { Like, FindOptionsWhere, QueryRunner } from "typeorm";
+import { getPharmacyRepository, getPharmacyRepositoryWithQueryRunner } from "../../repository/pharmacyRepository";
 import { getCommandRepository } from "../../repository/commandRepository";
 import { logger } from "../../app";
 import { Pharmacy } from "../../entities/Pharmacy.entity";
 import { PharmacyState } from "../../enums/PharmacyState.enum";
 import { COMMAND_STATUS } from "../../enums/CommandStatus";
 import { supabase } from "../../app";
+import { AuthService } from "../auth/AuthService";
 
+
+const authService = new AuthService();
 export interface PaginatedResult<T> {
   data: T[];
   total: number;
@@ -227,12 +230,25 @@ export class PharmacyService {
   }
 
   static async updatePharmacy(
+    queryRunner: QueryRunner,
     id: string,
     pharmacyData: Partial<Pharmacy>,
   ): Promise<Pharmacy | null> {
     try {
-      const repository = getPharmacyRepository();
+      console.log("Updating pharmacy with ID:", id, "and data:", pharmacyData);
+      const repository = getPharmacyRepositoryWithQueryRunner(queryRunner);
+      const existingPharmacy = await repository.findOne({ where: { id } });
+
+      if (!existingPharmacy) {
+        throw new Error("PharmacyNotFound: Pharmacie introuvable.");
+      }
       await repository.update(id, pharmacyData);
+      
+      await authService.update(queryRunner, {
+        phone: pharmacyData.phone!,
+        userId: existingPharmacy.userId as string,
+      });
+
       return await this.getPharmacyById(id);
     } catch (error) {
       logger.error("Error in updatePharmacy: ", error);

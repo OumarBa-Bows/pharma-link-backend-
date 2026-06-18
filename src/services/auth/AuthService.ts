@@ -2,6 +2,9 @@ import jwt from "jsonwebtoken";
 import { UserDto } from "../../interfaces/UserDto";
 import { getUserRepository } from "../../repository/userRepository";
 import bcrypt from "bcryptjs";
+import { QueryRunner } from "typeorm";
+import { AuthUser } from "../../entities/AuthUser.entity";
+import { GlobalKeys } from "../../configs/GlobalKeys.config";
 
 export class AuthService {
   /**
@@ -74,5 +77,26 @@ export class AuthService {
       },
       token,
     };
+  }
+
+
+  async update(queryRunner: QueryRunner,data:{
+    phone:string,
+    userId:string
+  }){
+    try {
+      const authUserRepo = queryRunner.manager.getRepository(AuthUser);
+      const user = await authUserRepo.findOne({ where: { id: data.userId } });
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+      user.phone = data.phone;
+      user.email = `${data.phone}${GlobalKeys.PHARMACY_EMAIL_SUFFIX}`;
+      await authUserRepo.save(user);
+      return user;
+    } catch (error) {
+      
+      throw error;
+    }
   }
 }

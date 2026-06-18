@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { logger } from "../app";
 import { PharmacyService } from "../services/pharmacies/PharmacyService";
+import { AppDataSource } from "../configs/data-source";
 
 export class PharmacyController {
   static async getAllPharmacies(req: Request, res: Response) {
@@ -84,9 +85,13 @@ export class PharmacyController {
 
   // Update pharmacy
   static update = async (req: Request, res: Response) => {
+     // Start the querry runner insatance
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
       const { id } = req.params;
-      const pharmacy = await PharmacyService.updatePharmacy(id, req.body);
+      const pharmacy = await PharmacyService.updatePharmacy(queryRunner, id, req.body);
 
       if (!pharmacy) {
         return res.status(404).send({
@@ -94,7 +99,7 @@ export class PharmacyController {
           message: "Pharmacy not found",
         });
       }
-
+      await queryRunner.commitTransaction();
       return res.status(200).send({
         success: true,
         message: "Pharmacy updated successfully",
@@ -102,10 +107,13 @@ export class PharmacyController {
       });
     } catch (error: any) {
       logger.error("Error updating pharmacy: ", error);
+      await queryRunner.rollbackTransaction();
       return res.status(500).send({
         success: false,
         message: error.message || "Error updating pharmacy",
       });
+    }finally {
+      await queryRunner.release();
     }
   };
 
