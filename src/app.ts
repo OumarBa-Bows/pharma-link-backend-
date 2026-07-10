@@ -130,7 +130,7 @@ async function createDefaultAdmin() {
     relations: ["roles"],
   });
   if (!admin) {
-    const hashed = await bcrypt.hash("1234", 10);
+    const hashed = await bcrypt.hash("ph@rmalink$2026", 10);
     admin = userRepo.create({
       name: "admin",
       email: "admin@gmail.com",
