@@ -1,14 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { createRemoteJWKSet, jwtVerify, JWTPayload } from "jose";
 import { logger } from "../app";
 import * as Sentry from "@sentry/node";
 import { body, ValidationError, validationResult } from "express-validator";
-
-// JWKS Supabase (clés publiques pour vérifier les tokens ES256), mis en cache automatiquement par jose
-const supabaseJWKS = createRemoteJWKSet(
-  new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`)
-);
 
 // Helper: extrait le token de la requête (cookie ou header)
 function getTokenFromRequest(req: Request): string | undefined {
@@ -28,34 +22,14 @@ function getUserRolesFromPayload(payload: any): string[] {
 }
 
 // Helper: vérifie et décode le token JWT, lève une erreur si invalide
-// Supporte 2 sources : Supabase Auth (ES256, front portail) et backend maison (HS256, backoffice)
-async function verifyAndDecodeToken(
-  token: string
-): Promise<jwt.JwtPayload | JWTPayload> {
-  const decodedHeader = jwt.decode(token, { complete: true })?.header;
-
-  if (!decodedHeader) {
-    throw new jwt.JsonWebTokenError("Malformed token");
-  }
-
-  if (decodedHeader.alg === "ES256") {
-    // Token Supabase Auth (front portail)
-    const { payload } = await jwtVerify(token, supabaseJWKS, {
-      issuer: `${process.env.SUPABASE_URL}/auth/v1`,
-      audience: "authenticated",
-    });
-    return payload;
-  }
-
-  if (decodedHeader.alg === "HS256") {
-    // Token backend maison (backoffice Angular)
-    const jwtSecretKey = process.env.SUPABASE_JWT_SECRET_KEY!;
-    return jwt.verify(token, jwtSecretKey, {
-      algorithms: ["HS256"],
-    }) as jwt.JwtPayload;
-  }
-
-  throw new jwt.JsonWebTokenError(`Unsupported algorithm: ${decodedHeader.alg}`);
+function verifyAndDecodeToken(token: string): jwt.JwtPayload {
+  const jwtSecretKey = process.env.SUPABASE_JWT_SECRET_KEY!.replace(
+    /\n/g,
+    "\n"
+  );
+  return jwt.verify(token, jwtSecretKey, {
+    algorithms: ["HS256"],
+  }) as jwt.JwtPayload;
 }
 
 // Helper: vérifie si l'utilisateur possède au moins un des rôles requis
@@ -65,7 +39,9 @@ function checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
 }
 
 export function authorize(roles: string[]) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    // JUST TESTING
+
     const token = getTokenFromRequest(req);
     if (!token) {
       logger.warn("401 Authorization token is missing");
@@ -74,7 +50,7 @@ export function authorize(roles: string[]) {
     }
 
     try {
-      const decoded = await verifyAndDecodeToken(token);
+      const decoded = verifyAndDecodeToken(token);
       const userRoles = getUserRolesFromPayload(decoded);
       logger.info(`User roles: ${userRoles} | Required: ${roles}`);
       if (roles.length != 0 && !checkUserRoles(userRoles, roles)) {
@@ -89,21 +65,11 @@ export function authorize(roles: string[]) {
     } catch (error: any) {
       console.error(error);
       logger.error(error);
-
-      const isExpired =
-        error instanceof jwt.TokenExpiredError ||
-        error.code === "ERR_JWT_EXPIRED";
-      const isInvalid =
-        error instanceof jwt.JsonWebTokenError ||
-        error.name === "JWTInvalid" ||
-        error.name === "JWSSignatureVerificationFailed" ||
-        error.name === "JWSInvalid";
-
-      if (isExpired) {
+      if (error instanceof jwt.TokenExpiredError) {
         Sentry.captureException("401 Token expired");
         return res.status(401).send("Token expired");
       }
-      if (isInvalid) {
+      if (error instanceof jwt.JsonWebTokenError) {
         Sentry.captureException("401 Invalid token");
         return res.status(401).send("Invalid token");
       }

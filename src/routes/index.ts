@@ -3,7 +3,7 @@ import articeRoute from "./articles.route";
 import listingRoute from "./listings.route";
 import authRoute from "./auth.route";
 import userRoute from "./users.route";
-import { authorize } from "../middlewares/auth.middleware";
+import { authorize } from "../middlewares/auth.middleware"; 
 import commandRoute from "./commands.route";
 import authPharmacyRoute from "./pharmacy/auth.pharmacy.route";
 import pharmacyRoute from "./pharmacies.route";
