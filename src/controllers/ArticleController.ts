@@ -222,7 +222,7 @@ export class ArticleController {
       const { id, remiseId } = req.params;
       const article = await ArticleService.deleteRemiseFromArticle(
         id,
-        remiseId
+        remiseId,
       );
       return res.status(200).send({
         success: true,
@@ -245,7 +245,7 @@ export class ArticleController {
       const article = await ArticleService.updateRemiseOfArticle(
         id,
         remiseId,
-        remiseData
+        remiseData,
       );
       return res.status(200).send({
         success: true,
@@ -275,6 +275,36 @@ export class ArticleController {
       return res.status(500).send({
         success: false,
         message: error.message || "Error getting article remises",
+      });
+    }
+  };
+
+  // Télécharger le template d'importation Excel
+  static downloadTemplate = async (req: Request, res: Response) => {
+    try {
+      const buffer = await ArticleService.generateExcelTemplate();
+
+      // Définir le nom du fichier
+      const filename = `template_import_articles_${Date.now()}.xlsx`;
+
+      // Définir les en-têtes de réponse
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      res.setHeader("Content-Length", buffer.length);
+
+      // Envoyer le buffer
+      return res.status(200).send(buffer);
+    } catch (error: any) {
+      console.error("Error downloading template: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error downloading template",
       });
     }
   };

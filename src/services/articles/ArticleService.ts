@@ -171,7 +171,7 @@ export class ArticleService {
   static async uploadImage(
     file: any,
     bucketName = "articles-images",
-    folder = "images/"
+    folder = "images/",
   ): Promise<string> {
     try {
       if (!file) {
@@ -215,7 +215,7 @@ export class ArticleService {
    */
   static async deleteImage(
     imageUrl: string,
-    bucketName = "articles-images"
+    bucketName = "articles-images",
   ): Promise<boolean> {
     try {
       if (!imageUrl) {
@@ -227,7 +227,7 @@ export class ArticleService {
       const idx = imageUrl.indexOf(marker);
       if (idx === -1) {
         throw new Error(
-          "URL invalide: impossible d'extraire le chemin du fichier"
+          "URL invalide: impossible d'extraire le chemin du fichier",
         );
       }
       const filePath = imageUrl.substring(idx + marker.length);
@@ -243,6 +243,58 @@ export class ArticleService {
       console.error("Erreur lors de la suppression de l'image:", error.message);
       // throw new Error("Échec de la suppression de l'image: " + error.message);
       return false;
+    }
+  }
+
+  /**
+   * Génère un template Excel pour l'importation d'articles.
+   * Le template contient les colonnes attendues et deux lignes d'exemple.
+   *
+   * @returns Buffer du fichier Excel généré
+   */
+  static async generateExcelTemplate(): Promise<Buffer> {
+    try {
+      // Définir les colonnes du template
+      const headers = ["Référence", "Désignation", "Stock", "Prix"];
+
+      // Créer des exemples de données
+      const exampleData = [
+        {
+          Référence: "ART001",
+          Désignation: "Paracétamol 500mg",
+          Stock: "100",
+          Prix: 12.5,
+        },
+        {
+          Référence: "ART002",
+          Désignation: "Ibuprofène 400mg",
+          Stock: "50",
+          Prix: 18.75,
+        },
+      ];
+
+      // Créer une nouvelle feuille de calcul
+      const worksheet = XLSX.utils.json_to_sheet(exampleData, {
+        header: headers,
+      });
+
+      // Créer un nouveau classeur et ajouter la feuille
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Articles");
+
+      // Générer le buffer du fichier Excel
+      const buffer = XLSX.write(workbook, {
+        type: "buffer",
+        bookType: "xlsx",
+      });
+
+      return buffer;
+    } catch (error: any) {
+      console.error(
+        "Erreur lors de la génération du template Excel:",
+        error.message,
+      );
+      throw new Error("Échec de la génération du template: " + error.message);
     }
   }
 
@@ -334,7 +386,7 @@ export class ArticleService {
           if (typeof priceRaw === "number") price = priceRaw;
           else
             price = parseFloat(
-              (priceRaw as string).toString().replace(",", ".")
+              (priceRaw as string).toString().replace(",", "."),
             );
           if (!isFinite(price)) throw new Error("price invalide");
 
@@ -411,10 +463,10 @@ export class ArticleService {
     } catch (error: any) {
       console.error(
         "Erreur lors de la récupération des catégories:",
-        error.message
+        error.message,
       );
       throw new Error(
-        "Échec de la récupération des catégories: " + error.message
+        "Échec de la récupération des catégories: " + error.message,
       );
     }
   }
@@ -422,7 +474,7 @@ export class ArticleService {
   // Ajouter une remise à un article
   static async addRemiseToArticle(
     articleId: string,
-    remise: { min: number; max: number; percent: number }
+    remise: { min: number; max: number; percent: number },
   ) {
     try {
       const articleRepo = getArticleRepository();
@@ -461,7 +513,7 @@ export class ArticleService {
   static async updateRemiseOfArticle(
     articleId: string,
     remiseId: string,
-    remiseData: { min: number; max: number; percent: number }
+    remiseData: { min: number; max: number; percent: number },
   ) {
     try {
       const articleRepo = getArticleRepository();
@@ -491,10 +543,10 @@ export class ArticleService {
     } catch (error: any) {
       logger.error(
         "Erreur lors de la modification de la remise:",
-        error.message
+        error.message,
       );
       throw new Error(
-        "Échec de la modification de la remise: " + error.message
+        "Échec de la modification de la remise: " + error.message,
       );
     }
   }
@@ -523,7 +575,7 @@ export class ArticleService {
     } catch (error: any) {
       logger.error(
         "Erreur lors de la suppression de la remise:",
-        error.message
+        error.message,
       );
       throw new Error("Échec de la suppression de la remise: " + error.message);
     }
@@ -546,7 +598,7 @@ export class ArticleService {
     } catch (error: any) {
       logger.error(
         "Erreur lors de la récupération des remises:",
-        error.message
+        error.message,
       );
       throw new Error("Échec de la récupération des remises: " + error.message);
     }

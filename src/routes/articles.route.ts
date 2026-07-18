@@ -12,17 +12,17 @@ articleRoute.post(
   "/",
   createArticleValidator,
   imageValidator,
-  ArticleController.create
+  ArticleController.create,
 );
 articleRoute.post(
   "/update/:id",
   updateArticleValidator,
   imageValidator,
-  ArticleController.update
+  ArticleController.update,
 );
 articleRoute.get("/", ArticleController.getAll);
 articleRoute.get("/paginated/limit", ArticleController.getPerPage);
-articleRoute.get("/:id", ArticleController.getById);
+articleRoute.get("/download/template", ArticleController.downloadTemplate);
 articleRoute.get("/delete/:id", ArticleController.delete);
 articleRoute.post("/upload", uploadExcelValidator, ArticleController.upload);
 articleRoute.get("/categories/get", ArticleController.getCategories);
@@ -30,12 +30,13 @@ articleRoute.get("/set/publish/:id", ArticleController.togglePublishStatus);
 articleRoute.post("/add/remise/:id", ArticleController.addRemiseToArticle);
 articleRoute.put(
   "/update/remise/:id/:remiseId",
-  ArticleController.updateRemiseInArticle
+  ArticleController.updateRemiseInArticle,
 );
 articleRoute.delete(
   "/remove/remise/:id/:remiseId",
-  ArticleController.removeRemiseFromArticle
+  ArticleController.removeRemiseFromArticle,
 );
 
 articleRoute.get("/remises/get/:id", ArticleController.getArticleRemises);
+articleRoute.get("/:id", ArticleController.getById);
 export default articleRoute;
