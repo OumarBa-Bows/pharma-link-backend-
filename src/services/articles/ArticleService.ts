@@ -3,6 +3,7 @@ import { ArticleDto } from "../../interfaces/ArticleDto";
 import { getArticleRepository } from "../../repository/articleRepository";
 import { supabase } from "../../app";
 import * as XLSX from "xlsx";
+import sharp from "sharp";
 import { getCategoryRepository } from "../../repository/categoryRepository";
 
 export class ArticleService {
@@ -178,15 +179,28 @@ export class ArticleService {
         return "";
       }
 
+      // Compression + redimensionnement pour limiter la taille stockée dans Supabase
+      const compressedData = await sharp(file.data)
+        .rotate() // applique l'orientation EXIF puis supprime les métadonnées
+        .resize({
+          width: 1200,
+          height: 1200,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 75 })
+        .toBuffer();
+
       // Nom unique pour éviter les collisions
-      const fileName = `${Date.now()}_${file.name}`;
+      const baseName = file.name?.replace(/\.[^/.]+$/, "") || "image";
+      const fileName = `${Date.now()}_${baseName}.webp`;
       const filePath = `${folder}${fileName}`;
 
       // Upload dans Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
-        .upload(filePath, file.data, {
-          contentType: file.mimetype,
+        .upload(filePath, compressedData, {
+          contentType: "image/webp",
           upsert: false, // ne remplace pas si le fichier existe déjà
         });
 
