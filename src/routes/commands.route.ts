@@ -22,6 +22,7 @@ commandRoute.post(
 
 commandRoute.post("/get/by-id", CommandController.getById);
 commandRoute.post("/get/by-distributor", CommandController.getAllByDistributor);
+commandRoute.get("/paginated", CommandController.getPaginated);
 commandRoute.post(
   "/update-article-quantity",
   CommandController.updateCommandeArticleQuantity

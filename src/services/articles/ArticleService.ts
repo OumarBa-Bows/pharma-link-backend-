@@ -5,6 +5,8 @@ import { supabase } from "../../app";
 import * as XLSX from "xlsx";
 import { getCategoryRepository } from "../../repository/categoryRepository";
 
+const LOW_STOCK_THRESHOLD = 20;
+
 export class ArticleService {
   // Créer un article
   static async createArticle(data: ArticleDto, image: any) {
@@ -103,24 +105,66 @@ export class ArticleService {
     }
   }
 
-  // Récupérer les articles paginés
-  static async getArticlesPaginated(page: number = 1, limit: number = 10) {
+  // Récupérer les articles paginés (recherche et filtre stock faible côté base)
+  static async getArticlesPaginated(
+    page: number = 1,
+    limit: number = 20,
+    search: string = "",
+    lowStock: boolean = false,
+  ) {
     try {
       const articleRepo = getArticleRepository();
-      const [data, total] = await articleRepo.findAndCount({
-        order: { createdAt: "DESC" },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      const term = search.trim();
 
-      const totalPages = Math.ceil(total / limit);
+      // Requête de base partagée entre la liste et le compteur de stock faible
+      const baseQuery = () => {
+        const qb = articleRepo
+          .createQueryBuilder("article")
+          .leftJoinAndSelect("article.category", "category");
+        if (term) {
+          // Échapper les jokers LIKE saisis par l'utilisateur
+          const escaped = term.replace(/[\\%_]/g, "\\$&");
+          qb.andWhere(
+            "(article.name ILIKE :search OR article.reference ILIKE :search OR category.name ILIKE :search OR CAST(article.price AS TEXT) ILIKE :search)",
+            { search: `%${escaped}%` },
+          );
+        }
+        return qb;
+      };
+
+      const listQuery = baseQuery();
+      if (lowStock) {
+        listQuery.andWhere("article.availableQuantity <= :threshold", {
+          threshold: LOW_STOCK_THRESHOLD,
+        });
+      }
+      // id en second critère pour un ordre stable entre les pages (imports avec le même createdAt)
+      // offset/limit suffisent : la jointure ManyToOne ne duplique pas les lignes
+      listQuery
+        .orderBy("article.createdAt", "DESC")
+        .addOrderBy("article.id", "DESC")
+        .offset((page - 1) * limit)
+        .limit(limit);
+
+      const [[articles, total], lowStockCount] = await Promise.all([
+        listQuery.getManyAndCount(),
+        baseQuery()
+          .andWhere("article.availableQuantity <= :threshold", {
+            threshold: LOW_STOCK_THRESHOLD,
+          })
+          .getCount(),
+      ]);
 
       return {
-        data,
+        articles: articles.map((a) => ({
+          ...a,
+          category: a.category?.name ?? null,
+        })),
         total,
-        page: +page,
-        limit: +limit,
-        totalPages,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        lowStockCount,
       };
     } catch (error) {
       return Promise.reject(error);

@@ -313,6 +313,37 @@ export class ListingService {
     }
   }
 
+  /**
+   * Génère un template Excel pour l'importation d'un listing.
+   * Seule la colonne "Référence" est lue à l'import ; "Désignation" sert de repère.
+   * Le titre, la description et la date de fin sont saisis dans la modale d'import.
+   *
+   * @returns Buffer du fichier Excel généré
+   */
+  static async generateExcelTemplate(): Promise<Buffer> {
+    try {
+      const headers = ["Référence", "Désignation"];
+      const exampleData = [
+        { Référence: "ART001", Désignation: "Paracétamol 500mg" },
+        { Référence: "ART002", Désignation: "Ibuprofène 400mg" },
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(exampleData, {
+        header: headers,
+      });
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Listing");
+
+      return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    } catch (error: any) {
+      console.error(
+        "Erreur lors de la génération du template Excel:",
+        error.message
+      );
+      throw new Error("Échec de la génération du template: " + error.message);
+    }
+  }
+
   static generateListingDescription(): string {
     const now = new Date();
     const formatted =

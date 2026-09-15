@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { logger } from "../app";
 import { PharmacyService } from "../services/pharmacies/PharmacyService";
 import { AppDataSource } from "../configs/data-source";
+import { PharmacyState } from "../enums/PharmacyState.enum";
 
 export class PharmacyController {
   static async getAllPharmacies(req: Request, res: Response) {
@@ -24,14 +25,24 @@ export class PharmacyController {
   // Get paginated list of pharmacies with search
   static getPaginated = async (req: Request, res: Response) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const search = (req.query.search as string) || "";
+      const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+      const limit = Math.min(
+        Math.max(parseInt(req.query.limit as string) || 20, 1),
+        100,
+      );
+      const search =
+        typeof req.query.search === "string" ? req.query.search : "";
+      const state =
+        typeof req.query.status === "string" &&
+        (Object.values(PharmacyState) as string[]).includes(req.query.status)
+          ? req.query.status
+          : "";
 
       const result = await PharmacyService.getPaginatedPharmacies(
         page,
         limit,
         search,
+        state,
       );
 
       return res.status(200).send({

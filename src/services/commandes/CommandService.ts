@@ -105,6 +105,82 @@ export class CommandService {
     }
   }
 
+  // Récupérer les commandes paginées : commandes en attente en premier, puis les plus récentes
+  static async getCommandsPaginated(
+    page: number = 1,
+    limit: number = 20,
+    search: string = "",
+    status: string = ""
+  ) {
+    try {
+      const term = search.trim();
+
+      // Requête de base (recherche) partagée entre la liste et les compteurs par statut
+      const baseQuery = () => {
+        const qb = commandRepository
+          .createQueryBuilder("command")
+          .leftJoinAndSelect("command.pharmacy", "pharmacy");
+        if (term) {
+          // Échapper les jokers LIKE saisis par l'utilisateur
+          const escaped = term.replace(/[\\%_]/g, "\\$&");
+          qb.andWhere(
+            "(command.code ILIKE :search OR pharmacy.name ILIKE :search OR pharmacy.phone ILIKE :search OR pharmacy.code ILIKE :search OR CAST(command.status AS TEXT) ILIKE :search OR CAST(command.totalprice AS TEXT) ILIKE :search)",
+            { search: `%${escaped}%` }
+          );
+        }
+        return qb;
+      };
+
+      const listQuery = baseQuery();
+      if (status) {
+        listQuery.andWhere("command.status = :status", { status });
+      }
+      // offset/limit suffisent : la jointure ManyToOne ne duplique pas les lignes
+      listQuery
+        .addSelect(
+          "CASE WHEN command.status = :pending THEN 0 ELSE 1 END",
+          "pending_first"
+        )
+        .setParameter("pending", COMMAND_STATUS.pending)
+        .orderBy("pending_first", "ASC")
+        .addOrderBy("command.date", "DESC")
+        .addOrderBy("command.id", "DESC")
+        .offset((page - 1) * limit)
+        .limit(limit);
+
+      const [[commands, total], rawCounts] = await Promise.all([
+        listQuery.getManyAndCount(),
+        baseQuery()
+          .select("command.status", "status")
+          .addSelect("COUNT(*)", "count")
+          .groupBy("command.status")
+          .getRawMany<{ status: COMMAND_STATUS; count: string }>(),
+      ]);
+
+      const statusCounts: Record<string, number> = { ALL: 0 };
+      for (const s of Object.values(COMMAND_STATUS)) statusCounts[s] = 0;
+      for (const row of rawCounts) {
+        statusCounts[row.status] = Number(row.count);
+        statusCounts.ALL += Number(row.count);
+      }
+
+      return {
+        commandes: commands.map((a) => ({
+          ...a,
+          pharmacy: `${a.pharmacy?.name} (${a.pharmacy?.phone})`,
+          pharmacyCode: a.pharmacy?.code,
+        })),
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        statusCounts,
+      };
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
   static async updateCommand(queryRunner: QueryRunner, data: CreateCommandDTO) {
     try {
       if (!data.id)

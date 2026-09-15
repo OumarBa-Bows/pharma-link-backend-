@@ -11,11 +11,12 @@ import { AuthService } from "../auth/AuthService";
 
 const authService = new AuthService();
 export interface PaginatedResult<T> {
-  data: T[];
+  pharmacies: T[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+  statusCounts: Record<string, number>;
 }
 
 export interface CommandCountByStatus {
@@ -28,37 +29,73 @@ export interface CommandCountByStatus {
 }
 
 export class PharmacyService {
-  // Get paginated list of pharmacies with search
+  // Get paginated list of pharmacies with search: pending pharmacies first, then newest
   static async getPaginatedPharmacies(
     page: number = 1,
-    limit: number = 10,
+    limit: number = 20,
     search: string = "",
+    state: string = "",
   ): Promise<PaginatedResult<Pharmacy>> {
     try {
       const repository = getPharmacyRepository();
-      const [data, total] = await repository.findAndCount({
-        where: search
-          ? [
-              { name: Like(`%${search}%`) },
-              { address: Like(`%${search}%`) },
-              { code: Like(`%${search}%`) },
-              { email: Like(`%${search}%`) },
-            ]
-          : {},
-        relations: ["zone", "user"],
-        order: { createdAt: "DESC" },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      const term = search.trim();
 
-      const totalPages = Math.ceil(total / limit);
+      // Base query (search) shared by the list and the per-state counters
+      const baseQuery = () => {
+        const qb = repository
+          .createQueryBuilder("pharmacy")
+          .leftJoinAndSelect("pharmacy.zone", "zone");
+        if (term) {
+          // Escape LIKE wildcards typed by the user
+          const escaped = term.replace(/[\\%_]/g, "\\$&");
+          qb.andWhere(
+            "(pharmacy.name ILIKE :search OR pharmacy.phone ILIKE :search OR pharmacy.address ILIKE :search OR pharmacy.code ILIKE :search OR pharmacy.email ILIKE :search OR pharmacy.city ILIKE :search OR CAST(pharmacy.customerType AS TEXT) ILIKE :search OR CAST(pharmacy.state AS TEXT) ILIKE :search)",
+            { search: `%${escaped}%` },
+          );
+        }
+        return qb;
+      };
+
+      const listQuery = baseQuery();
+      if (state) {
+        listQuery.andWhere("pharmacy.state = :state", { state });
+      }
+      // offset/limit are enough: the ManyToOne join does not duplicate rows
+      listQuery
+        .addSelect(
+          "CASE WHEN pharmacy.state = :pending THEN 0 ELSE 1 END",
+          "pending_first",
+        )
+        .setParameter("pending", PharmacyState.PENDING)
+        .orderBy("pending_first", "ASC")
+        .addOrderBy("pharmacy.createdAt", "DESC")
+        .addOrderBy("pharmacy.id", "DESC")
+        .offset((page - 1) * limit)
+        .limit(limit);
+
+      const [[pharmacies, total], rawCounts] = await Promise.all([
+        listQuery.getManyAndCount(),
+        baseQuery()
+          .select("pharmacy.state", "state")
+          .addSelect("COUNT(*)", "count")
+          .groupBy("pharmacy.state")
+          .getRawMany<{ state: PharmacyState; count: string }>(),
+      ]);
+
+      const statusCounts: Record<string, number> = { ALL: 0 };
+      for (const s of Object.values(PharmacyState)) statusCounts[s] = 0;
+      for (const row of rawCounts) {
+        statusCounts[row.state] = Number(row.count);
+        statusCounts.ALL += Number(row.count);
+      }
 
       return {
-        data,
+        pharmacies,
         total,
-        page: +page,
-        limit: +limit,
-        totalPages,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        statusCounts,
       };
     } catch (error) {
       logger.error("Error in getPaginatedPharmacies: ", error);

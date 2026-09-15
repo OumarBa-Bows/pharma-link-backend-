@@ -119,6 +119,32 @@ export class ListingController {
     }
   };
 
+  // Télécharger le template d'importation Excel
+  static downloadTemplate = async (req: Request, res: Response) => {
+    try {
+      const buffer = await ListingService.generateExcelTemplate();
+      const filename = `template_import_listings_${Date.now()}.xlsx`;
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader("Content-Length", buffer.length);
+
+      return res.status(200).send(buffer);
+    } catch (error: any) {
+      console.error("Error downloading listing template: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error downloading template",
+      });
+    }
+  };
+
   static getDetailsByListingId = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

@@ -4,6 +4,7 @@ import { logger } from "../app";
 import { validationResult } from "express-validator";
 import { AppDataSource } from "../configs/data-source";
 import { CommandService } from "../services/commandes/CommandService";
+import { COMMAND_STATUS } from "../enums/CommandStatus";
 export class CommandController {
   static create = async (req: Request, res: Response) => {
     logger.info("Start Creation Command");
@@ -125,6 +126,41 @@ export class CommandController {
       return res.status(500).send({
         success: false,
         message: error.message || "Error update status",
+      });
+    }
+  };
+
+  static getPaginated = async (req: Request, res: Response) => {
+    try {
+      const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+      const limit = Math.min(
+        Math.max(parseInt(req.query.limit as string) || 20, 1),
+        100
+      );
+      const search =
+        typeof req.query.search === "string" ? req.query.search : "";
+      const status =
+        typeof req.query.status === "string" &&
+        (Object.values(COMMAND_STATUS) as string[]).includes(req.query.status)
+          ? req.query.status
+          : "";
+
+      const result = await CommandService.getCommandsPaginated(
+        page,
+        limit,
+        search,
+        status
+      );
+      return res.status(200).send({
+        success: true,
+        message: "Commands retrieved successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error getting paginated commands: ", error);
+      return res.status(500).send({
+        success: false,
+        message: error.message || "Error getting paginated commands",
       });
     }
   };

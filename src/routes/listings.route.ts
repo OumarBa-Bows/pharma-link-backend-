@@ -14,6 +14,7 @@ listingRoute.post(
   ListingController.update
 );
 listingRoute.get("/", ListingController.getAll);
+listingRoute.get("/download/template", ListingController.downloadTemplate);
 listingRoute.get("/:id", ListingController.getById);
 listingRoute.get("/delete/:id", ListingController.delete);
 listingRoute.post("/import", uploadExcelValidator, ListingController.import);

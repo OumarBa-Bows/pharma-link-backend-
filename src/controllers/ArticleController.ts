@@ -81,10 +81,21 @@ export class ArticleController {
   // Récupérer les articles paginés
   static getPerPage = async (req: Request, res: Response) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+      const limit = Math.min(
+        Math.max(parseInt(req.query.limit as string) || 20, 1),
+        100,
+      );
+      const search =
+        typeof req.query.search === "string" ? req.query.search : "";
+      const lowStock = req.query.lowStock === "true";
 
-      const result = await ArticleService.getArticlesPaginated(page, limit);
+      const result = await ArticleService.getArticlesPaginated(
+        page,
+        limit,
+        search,
+        lowStock,
+      );
       return res.status(200).send({
         success: true,
         message: "Articles retrieved successfully",
