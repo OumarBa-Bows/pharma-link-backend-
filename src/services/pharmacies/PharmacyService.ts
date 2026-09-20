@@ -183,6 +183,11 @@ export class PharmacyService {
         await supabase.auth.admin.createUser({
           email: `${data.phone}@pharmalink.com`,
           password: data.password,
+          // Rôle racine du JWT : requis par authorize(["admin","PHARMACY","commande"])
+          // pour créer des commandes. Sans lui, le JWT reste role:"authenticated"
+          // et le backend renvoie 403 "Insufficient permissions". Aligne cette
+          // fonction sur la création côté portail (pharmacy-services.ts).
+          role: "PHARMACY",
           email_confirm: true,
           user_metadata: {
             pharmacy_id: savedPharmacy.id,
@@ -266,6 +271,43 @@ export class PharmacyService {
     }
   }
 
+  /**
+   * S'assure que l'utilisateur d'authentification lié possède le rôle racine
+   * "PHARMACY" dans son JWT (requis par authorize(["admin","PHARMACY","commande"])
+   * pour créer des commandes). Si le rôle est absent ou différent, il est ajouté.
+   * Best-effort : n'interrompt pas la mise à jour de la pharmacie en cas d'échec.
+   */
+  static async ensurePharmacyRole(userId?: string): Promise<void> {
+    if (!userId) return;
+    try {
+      const { data, error } = await supabase.auth.admin.getUserById(userId);
+      if (error || !data?.user) {
+        logger.warn(
+          `ensurePharmacyRole: utilisateur ${userId} introuvable${
+            error ? ` (${error.message})` : ""
+          }`,
+        );
+        return;
+      }
+
+      if ((data.user as any).role !== "PHARMACY") {
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          userId,
+          { role: "PHARMACY" },
+        );
+        if (updateError) {
+          logger.error(
+            `ensurePharmacyRole: échec de l'ajout du rôle pour ${userId}: ${updateError.message}`,
+          );
+        } else {
+          logger.info(`ensurePharmacyRole: rôle "PHARMACY" ajouté à ${userId}`);
+        }
+      }
+    } catch (error) {
+      logger.error("ensurePharmacyRole: erreur inattendue:", error);
+    }
+  }
+
   static async updatePharmacy(
     queryRunner: QueryRunner,
     id: string,
@@ -280,7 +322,11 @@ export class PharmacyService {
         throw new Error("PharmacyNotFound: Pharmacie introuvable.");
       }
       await repository.update(id, pharmacyData);
-      
+
+      // Garantit que le compte d'auth lié possède bien le rôle "PHARMACY"
+      // (corrige au passage les comptes créés avant l'ajout du rôle à la création).
+      await this.ensurePharmacyRole(existingPharmacy.userId as string);
+
       await authService.update(queryRunner, {
         phone: pharmacyData.phone!,
         userId: existingPharmacy.userId as string,
