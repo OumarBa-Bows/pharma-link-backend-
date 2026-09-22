@@ -24,7 +24,9 @@ interface UpdateListingDTO {
 export class ListingService {
   static async createListing(data: CreateListingDTO) {
     try {
-      const { name, description, end_date, articleIds } = data;
+      const { name, description, end_date } = data;
+      // Dédoublonnage : un article ne doit apparaître qu'une fois dans un listing
+      const articleIds = Array.from(new Set(data.articleIds));
       const articleEntities = await articleRepository.findBy({
         id: In(articleIds),
       });
@@ -138,33 +140,52 @@ export class ListingService {
       listing.description = data.description ?? listing.description;
       listing.end_date = data.end_date ?? listing.end_date;
 
-      // Mise à jour des articles (si fournis)
+      // Mise à jour des articles (si fournis) : on garde les lignes existantes,
+      // on ajoute les nouvelles et on supprime celles retirées
+      let detailsToRemove: ListingDetail[] = [];
       if (data.articleIds && data.articleIds.length > 0) {
-        const articleIds = data.articleIds.map((a) => a);
+        const articleIds = Array.from(new Set(data.articleIds));
         const articleEntities = await articleRepository.findBy({
           id: In(articleIds),
         });
 
-        if (articleEntities.length !== data.articleIds.length) {
+        if (articleEntities.length !== articleIds.length) {
           throw new Error("Un ou plusieurs articles n'existent pas");
         }
 
-        // Supprime les anciens ListingDetails
-        listing.listingDetails = [];
+        const wanted = new Set(articleIds);
+        const kept = new Map<string, ListingDetail>();
+        for (const detail of listing.listingDetails) {
+          if (wanted.has(detail.articleId) && !kept.has(detail.articleId)) {
+            kept.set(detail.articleId, detail);
+          } else {
+            detailsToRemove.push(detail);
+          }
+        }
 
-        // Crée les nouveaux
-        listing.listingDetails = data.articleIds.map((a) => {
-          const article = articleEntities.find((art) => art.id === a)!;
-          const detail = new ListingDetail();
-          detail.article = article;
-          detail.articleId = article.id;
-          detail.name = article.name;
-          detail.status = "active";
-          return detail;
-        });
+        const added = articleIds
+          .filter((a) => !kept.has(a))
+          .map((a) => {
+            const article = articleEntities.find((art) => art.id === a)!;
+            const detail = new ListingDetail();
+            detail.article = article;
+            detail.articleId = article.id;
+            detail.name = article.name;
+            detail.status = "active";
+            return detail;
+          });
+
+        listing.listingDetails = [...kept.values(), ...added];
       }
 
-      const updatedListing = await listingRepository.save(listing);
+      const updatedListing = await listingRepository.manager.transaction(
+        async (manager) => {
+          if (detailsToRemove.length > 0) {
+            await manager.remove(detailsToRemove);
+          }
+          return manager.save(listing);
+        }
+      );
 
       return {
         id: updatedListing.id,
@@ -275,7 +296,8 @@ export class ListingService {
         articleEntities.map((a) => [a.reference, a])
       );
 
-      const listingDetails = references.map((ref) => {
+      // Une seule ligne par article, même si la référence est répétée dans le fichier
+      const listingDetails = uniqueRefs.map((ref) => {
         const article = byRef.get(ref)!;
         const detail = new ListingDetail();
         detail.article = article;
